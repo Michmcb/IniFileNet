@@ -15,6 +15,8 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
     <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
