@@ -3,8 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <Title>IniFileNet</Title>
-    <Version>0.1</Version>
+    <Version>0.2</Version>
     <Authors>Michael McBride</Authors>
     <Company></Company>
     <Product>IniFileNet</Product>
@@ -14,9 +15,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
-    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <PackageReleaseNotes>- Added some more documentation
+- Added convenience class for making IniValueAcceptors
+- Added the documentation actually being added to the nuget package file (whoops)</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

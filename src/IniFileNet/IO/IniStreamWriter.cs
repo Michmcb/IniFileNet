@@ -11,6 +11,9 @@
 		private static readonly char[] crlf = ['\r', '\n'];
 		private static readonly char[] cr = ['\r'];
 		private static readonly char[] lf = ['\n'];
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniStreamWriter(TextWriter writer, NewLineStyle newLine, KeyDelimStyle keyDelimStyle = default, CommentStyle commentStyle = default, bool leaveOpen = false)
 		{
 			Writer = writer;
@@ -100,11 +103,11 @@
 			Writer.Write(NewLine);
 		}
 		/// <summary>
-		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})(ReadOnlySpan{char})"/>.
+		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
-		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})(ReadOnlySpan{char})"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.</exception>
 		public void WriteKeyValue(ReadOnlySpan<char> key, ReadOnlySpan<char> value)
 		{
 			if (!Syntax.IsLegalKey(key)) throw new ArgumentException("Illegal key", nameof(key));

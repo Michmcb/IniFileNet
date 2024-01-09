@@ -39,6 +39,10 @@
 	/// </summary>
 	public sealed class IniValueAcceptorOnlyLast<T> : IIniValueAcceptor
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
+		/// <param name="parse">The parse function.</param>
 		public IniValueAcceptorOnlyLast(Func<string, IniResult<T>> parse)
 		{
 			Parse = parse;

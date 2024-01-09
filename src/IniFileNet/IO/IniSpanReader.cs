@@ -13,6 +13,12 @@
 		private IniErrorCode _error;
 		private int _position;
 		private readonly SearchValues<char> keyEndChars;
+		/// <summary>
+		/// Creates a new instance with the current <paramref name="state"/>.
+		/// </summary>
+		/// <param name="block">The current block of data to read.</param>
+		/// <param name="state">The current state, or <see langword="default"/> if this is the first block.</param>
+		/// <param name="isFinalBlock">If this is the final block of data, set this to <see langword="true"/>.</param>
 		public IniSpanReader(ReadOnlySpan<char> block, IniSpanReaderState state, bool isFinalBlock)
 		{
 			keyEndChars = state.Options.AllowKeyDelimiterColon ? Syntax.EqColonSemicolon : Syntax.EqSemicolon;

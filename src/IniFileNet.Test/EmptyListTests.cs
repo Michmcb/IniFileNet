@@ -8,7 +8,7 @@
 		[Fact]
 		public static void Indexing()
 		{
-			EmptyList<int> x = [];
+			EmptyList<int> x = EmptyList.Get<int>();
 			Assert.Throws<IndexOutOfRangeException>(() => x[0]);
 			IList<int> y = x;
 			Assert.Throws<IndexOutOfRangeException>(() => y[0] = 1);
@@ -18,14 +18,14 @@
 		[Fact]
 		public static void Properties()
 		{
-			EmptyList<int> x = [];
+			EmptyList<int> x = EmptyList.Get<int>();
 			Assert.Empty(x);
 			Assert.True(x.IsReadOnly);
 		}
 		[Fact]
 		public static void StuffThatDoesNothing()
 		{
-			EmptyList<int> x = [];
+			EmptyList<int> x = EmptyList.Get<int>();
 			x.Add(0);
 			x.Insert(0, 0);
 			Assert.False(x.Remove(0));

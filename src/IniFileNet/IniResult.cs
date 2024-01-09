@@ -9,6 +9,9 @@
 	/// <typeparam name="T">The type of the value.</typeparam>
 	public readonly struct IniResult<T>
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniResult(T value, IniError error)
 		{
 			Value = value;

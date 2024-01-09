@@ -8,7 +8,13 @@
 	/// </summary>
 	public static class Syntax
 	{
+		/// <summary>
+		/// Equals and Semicolon characters.
+		/// </summary>
 		public static readonly SearchValues<char> EqSemicolon = SearchValues.Create(new char[] { '=', ';' });
+		/// <summary>
+		/// Equals, Colon, and Semicolon characters.
+		/// </summary>
 		public static readonly SearchValues<char> EqColonSemicolon = SearchValues.Create(new char[] { '=', ':', ';' });
 		/// <summary>
 		/// The characters that may not appear in a key.

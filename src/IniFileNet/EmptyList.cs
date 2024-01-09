@@ -25,7 +25,10 @@
 	public sealed class EmptyList<T> : IList<T>, IReadOnlyList<T>
 	{
 		internal static readonly EmptyList<T> instance = [];
-		public EmptyList() { }
+		/// <summary>
+		/// Creates a new instance. Prefer using <see cref="EmptyList.Get{T}"/>.
+		/// </summary>
+		internal EmptyList() { }
 		/// <summary>
 		/// Always throws <see cref="IndexOutOfRangeException"/>.
 		/// </summary>

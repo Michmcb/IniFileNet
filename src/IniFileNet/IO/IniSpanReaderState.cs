@@ -7,6 +7,9 @@
 	/// </summary>
 	public readonly struct IniSpanReaderState
 	{
+		/// <summary>
+		/// Creates an instance. Typically, you would use <see cref="IniSpanReader.GetState"/> instead.
+		/// </summary>
 		public IniSpanReaderState(IniSpanReaderBlockState state, IniErrorCode error, IniReaderOptions options, int position)
 		{
 			State = state;

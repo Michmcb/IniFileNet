@@ -7,6 +7,9 @@
 	/// </summary>
 	public readonly ref struct IniContent
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniContent(IniContentType type, ReadOnlySpan<char> content)
 		{
 			Type = type;

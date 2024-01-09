@@ -5,6 +5,9 @@
 	/// </summary>
 	public readonly struct IniReaderOptions
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniReaderOptions(bool allowGlobalKeys = false, bool allowCommentsNumberSign = false, bool allowKeyDelimiterColon = false, bool allowLineContinuations = false, bool ignoreComments = false)
 		{
 			AllowGlobalKeys = allowGlobalKeys;

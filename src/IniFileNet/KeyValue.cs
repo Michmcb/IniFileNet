@@ -8,7 +8,18 @@
 	/// </summary>
 	public sealed class KeyValue
 	{
+		/// <summary>
+		/// Creates a new instance, using <see cref="Array.Empty{T}"/> as the <see cref="Comments"/>.
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
 		public KeyValue(string key, string value) : this(key, value, Array.Empty<string>()) { }
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="comments">The comments.</param>
 		public KeyValue(string key, string value, IReadOnlyList<string> comments)
 		{
 			Key = key;

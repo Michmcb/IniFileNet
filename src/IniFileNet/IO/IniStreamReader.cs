@@ -18,6 +18,9 @@
 		private IniSpanReaderState state;
 		private bool isFinalBlock;
 		private int currentDataSize;
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniStreamReader(TextReader reader, IniReaderOptions options = default, int bufferSize = DefaultBufferSize, bool leaveOpen = false)
 		{
 			Reader = reader;

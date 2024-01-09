@@ -5,6 +5,9 @@
 	/// </summary>
 	public readonly struct ReadResult
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public ReadResult(IniToken token, string content)
 		{
 			Token = token;

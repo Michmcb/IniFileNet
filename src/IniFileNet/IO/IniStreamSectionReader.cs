@@ -11,6 +11,9 @@
 	{
 		private bool seenEnd;
 		private string nextSectionName;
+		/// <summary>
+		/// Creates a new instance, wrapping the provided <paramref name="reader"/>.
+		/// </summary>
 		public IniStreamSectionReader(IniStreamReader reader, bool leaveOpen = false)
 		{
 			nextSectionName = "";
@@ -28,7 +31,7 @@
 		public bool LeaveOpen { get; set; }
 		/// <summary>
 		/// Attempts to read the next section. Global keys, if they are allowed, will be in a section with a name of empty string.
-		/// Returns <see langword="false"/> when an error is encountered or there are no more sections to read. Check the <see cref="IniStreamReader.ErrorCode"/> property for any errors.
+		/// Returns <see langword="false"/> when an error is encountered or there are no more sections to read. Check the <see cref="IniStreamReader.Error"/> property for any errors.
 		/// </summary>
 		/// <param name="section">The read section.</param>
 		/// <returns><see langword="true"/> on reading a section, <see langword="false"/> on an error or when there are no more sections to read.</returns>

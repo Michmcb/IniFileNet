@@ -4,7 +4,6 @@
 	using System;
 	using System.IO;
 	using Xunit;
-
 	public static class IniStreamReaderTests
 	{
 		[Fact]

@@ -7,8 +7,18 @@
 	/// </summary>
 	public sealed class IniValueAcceptorMany : IIniValueAcceptor
 	{
+		/// <summary>
+		/// Creates a new instance with a new empty list.
+		/// </summary>
 		public IniValueAcceptorMany() : this([]) { }
+		/// <summary>
+		/// Creates a new instance with a new empty list, with a capacity of <paramref name="capacity"/>.
+		/// </summary>
 		public IniValueAcceptorMany(int capacity) : this(new List<string>(capacity)) { }
+		/// <summary>
+		/// Creates a new instance which will fill the provided list.
+		/// </summary>
+		/// <param name="values">The list of values to fill.</param>
 		public IniValueAcceptorMany(List<string> values)
 		{
 			Values = values;
@@ -44,7 +54,16 @@
 	public sealed class IniValueAcceptorMany<T, C> : IIniValueAcceptor
 		where C : ICollection<T>, new()
 	{
+		/// <summary>
+		/// Creates a new instance with a new empty list.
+		/// </summary>
+		/// <param name="parse">The parse function.</param>
 		public IniValueAcceptorMany(Func<string, IniResult<T>> parse) : this(new(), parse) { }
+		/// <summary>
+		/// Creates a new instance which will fill the provided list.
+		/// </summary>
+		/// <param name="values">The list of values to fill.</param>
+		/// <param name="parse">The parse function.</param>
 		public IniValueAcceptorMany(C values, Func<string, IniResult<T>> parse)
 		{
 			Values = values;

@@ -5,6 +5,9 @@
 	/// </summary>
 	public readonly struct IniError
 	{
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
 		public IniError(IniErrorCode error, string msg)
 		{
 			Code = error;

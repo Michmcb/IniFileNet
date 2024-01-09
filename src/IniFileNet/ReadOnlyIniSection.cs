@@ -7,7 +7,18 @@
 	/// </summary>
 	public sealed class ReadOnlyIniSection
 	{
+		/// <summary>
+		/// Creates a new instance, using <see cref="Array.Empty{T}"/> as the <see cref="Comments"/>.
+		/// </summary>
+		/// <param name="name">The section name.</param>
+		/// <param name="keyValues">The keys and values.</param>
 		public ReadOnlyIniSection(string name, IReadOnlyList<KeyValue> keyValues) : this(name, keyValues, Array.Empty<string>()) { }
+		/// <summary>
+		/// Creates a new instance.
+		/// </summary>
+		/// <param name="name">The section name.</param>
+		/// <param name="keyValues">The keys and values.</param>
+		/// <param name="comments">The comments.</param>
 		public ReadOnlyIniSection(string name, IReadOnlyList<KeyValue> keyValues, IReadOnlyList<string> comments)
 		{
 			Name = name;
