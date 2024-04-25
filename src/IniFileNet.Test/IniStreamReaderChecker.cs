@@ -2,6 +2,7 @@
 {
 	using IniFileNet.IO;
 	using System.IO;
+	using System.Threading.Tasks;
 	using Xunit;
 	public readonly struct IniStreamReaderChecker
 	{
@@ -12,7 +13,7 @@
 			reader = new(new StringReader(ini), options);
 			readerAsync = new(new StringReader(ini), options);
 		}
-		public void Next(IniToken token, string content)
+		public async Task Next(IniToken token, string content)
 		{
 			{
 				var actual = reader.Read();
@@ -20,8 +21,7 @@
 				Assert.Equal(content, actual.Content);
 			}
 			{
-				// HACK So evil....we're doing this because we test the span reader in the same method as the streams and you can't have ref structs in async tasks. Eventually we'll break those into different methods.
-				var actual = readerAsync.ReadAsync().Result;
+				var actual = await readerAsync.ReadAsync();
 				Assert.Equal(token, actual.Token);
 				Assert.Equal(content, actual.Content);
 			}

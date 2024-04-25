@@ -1,0 +1,8 @@
+0.3
+- Added Strings, which can hold string or string[].
+- IniError indicates that Msg can be null, which is the case for the default value.
+- Added IniDictionaryReader which can load an IniStreamReader into a dictionary.
+
+TODO
+IniStreamSectionReader: Has to have TryReadNextAsync, so the API needs to change to support that
+IniStreamReader: Make sure that the StreamPosition property is accurate. This is a bit tricky, I guess? The best we could do is make sure that it always advances by the same number of characters as the content, except in the case of errors because those always give us until the end of the buffer.

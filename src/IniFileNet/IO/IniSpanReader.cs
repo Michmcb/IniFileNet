@@ -65,6 +65,9 @@
 		/// </summary>
 		public IniContent Read()
 		{
+			// Instead of calling this function recursively, we just goto the beginning. The reason is because if we have lots and lots
+			// of contiguous comments, then eventually we'll cause a StackOverflowException.
+		start:
 			// Done: Keys cannot be empty
 			// Done: Keys cannot contain ;
 			// TODO: Leading/Trailing whitespace around key name has to be ignored
@@ -114,7 +117,7 @@
 							if (Options.IgnoreComments)
 							{
 								_position++;
-								return Read();
+								goto start;
 							}
 							else
 							{
@@ -229,14 +232,9 @@
 									// Additionally, if the content is empty, then that means we've consumed everything up to the backslash
 									// So we say that we hit the end to avoid getting stuck in an infinite loop of empty value content
 									var content = Block[start..(Block.Length - 1)];
-									if (content.Length == 0)
-									{
-										return new(IniContentType.End, default);
-									}
-									else
-									{
-										return new(IniContentType.Value, content);
-									}
+									return content.Length == 0
+										? new(IniContentType.End, default)
+										: new(IniContentType.Value, content);
 								}
 								else
 								{
@@ -289,23 +287,51 @@
 							{
 								_state = globalFlag | IniSpanReaderBlockState.CommentEnded;
 							}
-							return Options.IgnoreComments ? Read() : new(IniContentType.Comment, Block[start..]);
+							if (Options.IgnoreComments)
+							{
+								goto start;
+							}
+							else
+							{
+								return new(IniContentType.Comment, Block[start..]);
+							}
 						}
 						else
 						{
 							_state = globalFlag | IniSpanReaderBlockState.CommentEnded;
-							return Options.IgnoreComments ? Read() : new(IniContentType.Comment, Block[start.._position]);
+							if (Options.IgnoreComments)
+							{
+								goto start;
+							}
+							else
+							{
+								return new(IniContentType.Comment, Block[start.._position]);
+							}
 						}
 					}
 				case IniSpanReaderBlockState.CommentEndedGlobal:
 					{
 						_state = IniSpanReaderBlockState.Global;
-						return Options.IgnoreComments ? Read() : new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+						if (Options.IgnoreComments)
+						{
+							goto start;
+						}
+						else
+						{
+							return new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+						}
 					}
 				case IniSpanReaderBlockState.CommentEnded:
 					{
 						_state = IniSpanReaderBlockState.Any;
-						return Options.IgnoreComments ? Read() : new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+						if (Options.IgnoreComments)
+						{
+							goto start;
+						}
+						else
+						{
+							return new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+						}
 					}
 				case IniSpanReaderBlockState.Section:
 					{
@@ -364,7 +390,7 @@
 						else
 						{
 							_state = IniSpanReaderBlockState.Any;
-							return Read();
+							goto start;
 						}
 					}
 				default:
@@ -380,7 +406,7 @@
 		}
 		private void SkipWhitespace()
 		{
-			int i = Block[_position..].IndexOfAnyExcept(" \t\n\r");
+			int i = Block[_position..].IndexOfAnyExcept(Syntax.WhitespaceChars);
 			_position = i == -1
 				? Block.Length
 				: i + _position;

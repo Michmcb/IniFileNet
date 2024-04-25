@@ -9,41 +9,37 @@ I'll probably add a loader class that can load a file into memory in one chunk, 
 List<Target> targets = [];
 using (IniStreamSectionReader iniIn = new(new IniStreamReader(new StreamReader(new FileStream(args[0], FileMode.Open, FileAccess.Read), Encoding.UTF8), new IniReaderOptions(ignoreComments: true))))
 {
-	IniValueAcceptorOnlyLast url = new();
-	IniValueAcceptorOnlyLast outputTemplate = new();
-	IniValueAcceptorOnlyLast<bool> ask = new(Parse.Boolean);
-	IniValueAcceptorOnlyLast<Regex?> regex = new((string value) =>
+	IniValueAcceptorDictionaryBuilder b = new(new Dictionary<string, IIniValueAcceptor>(StringComparer.OrdinalIgnoreCase));
+	IniValueAcceptorOnlyLast url = b.OnlyLast("Url");
+	IniValueAcceptorOnlyFirst outputTemplate = b.OnlyFirst("OutputTemplate");
+	IniValueAcceptorSingle<bool> ask = b.Single("Ask", Parse.Boolean);
+	IniValueAcceptorOnlyLast<Regex?> regex = b.OnlyLast("Regex", (string value) =>
 	{
 		try
 		{
-			return new(new Regex(value), default);
+			return new IniResult<Regex?>(new Regex(value), default);
 		}
 		catch (Exception ex)
 		{
-			return new(null, new IniError(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as Regex: ", ex.Message)));
+			return new IniResult<Regex?>(null, new IniError(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as Regex: ", ex.Message)));
 		}
 	});
-	IniValueAcceptorOnlyLast<DateTimeOffset> latest = new((string value) => DateTimeOffset.TryParse(value, out var r)
-		? new(r, default)
-		: new(default, new(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as datetime"))));
+	IniValueAcceptorOnlyLast<DateTimeOffset> latest = b.OnlyLast("Seen", (string value) => DateTimeOffset.TryParse(value, out var r)
+		? new IniResult<DateTimeOffset>(r, default)
+		: new IniResult<DateTimeOffset>(default, new(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as DateTimeOffset"))));
 	IniValueAcceptorMany<int, HashSet<int>> seen = new(Parse.Int32);
-	IReadOnlyDictionary<string, IIniValueAcceptor> acceptors = new Dictionary<string, IIniValueAcceptor>()
-	{
-		["Url"] = url,
-		["OutputTemplate"] = outputTemplate,
-		["Ask"] = ask,
-		["Regex"] = regex,
-		["Latest"] = latest,
-		["Seen"] = seen,
-	};
+	Dictionary<string, IIniValueAcceptor> acceptors = b.Acceptors;
 	while (iniIn.TryReadNext(out var section))
 	{
 		IniError err = section.AcceptAll(acceptors);
+		// Can explicitly do it this way
 		if (err.Code != default)
 		{
 			Console.WriteLine("Error reading ini file: " + err.Msg);
 			throw err.ToException();
 		}
+		// Or just call this
+		err.ThrowIfError();
 
 		targets.Add(new Target
 		(
@@ -57,10 +53,6 @@ using (IniStreamSectionReader iniIn = new(new IniStreamReader(new StreamReader(n
 		));
 		Util.ResetAll(acceptors.Values);
 	}
-	if (iniIn.Reader.Error.Code != default)
-	{
-		Console.WriteLine("Error reading ini file: " + iniIn.Reader.Error.Msg);
-		throw iniIn.Reader.Error.ToException();
-	}
+	iniIn.Reader.Error.ThrowIfError();
 }
 ```

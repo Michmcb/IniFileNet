@@ -38,10 +38,11 @@
 		public bool TryReadNext([NotNullWhen(true)] out ReadOnlyIniSection? section)
 		{
 			List<KeyValue> keyValues = [];
-			var (comments, commentsReadOnly) = GetCommentList();
+			var (comments, commentsReadOnly) = Util.GetCommentList(Reader.Options.IgnoreComments);
 			string key = "";
 			while (true)
 			{
+				// TODO this has to be async; but we can't have an out parameter because async methods don't allow that! Have to change the return type to hold the bool and the ReadOnlyIniSection.
 				ReadResult rr = Reader.Read();
 				switch (rr.Token)
 				{
@@ -58,7 +59,7 @@
 						break;
 					case IniToken.Value:
 						keyValues.Add(new(key, rr.Content, commentsReadOnly));
-						(comments, commentsReadOnly) = GetCommentList();
+						(comments, commentsReadOnly) = Util.GetCommentList(Reader.Options.IgnoreComments);
 						break;
 					case IniToken.Comment:
 						comments.Add(rr.Content);
@@ -77,28 +78,6 @@
 						return true;
 				}
 			}
-		}
-		/// <summary>
-		/// Returns either a <see cref="List{T}"/> or a <see cref="EmptyList{T}"/>, depending on the value of <see cref="IniReaderOptions.IgnoreComments"/>.
-		/// </summary>
-		/// <returns>The same object typed as both <see cref="IList{T}"/> and <see cref="IReadOnlyList{T}"/>.</returns>
-		public (IList<string> comments, IReadOnlyList<string> commentsReadOnly) GetCommentList()
-		{
-			IList<string> comments;
-			IReadOnlyList<string> commentsReadOnly;
-			if (Reader.Options.IgnoreComments)
-			{
-				EmptyList<string> c = EmptyList.Get<string>();
-				comments = c;
-				commentsReadOnly = c;
-			}
-			else
-			{
-				List<string> c = [];
-				comments = c;
-				commentsReadOnly = c;
-			}
-			return (comments, commentsReadOnly);
 		}
 		/// <summary>
 		/// Disposes of <see cref="Reader"/> if <see cref="LeaveOpen"/> is <see langword="false"/>. Otherwise, does nothing.

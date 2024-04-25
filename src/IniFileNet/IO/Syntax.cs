@@ -41,6 +41,14 @@
 		/// </summary>
 		public static readonly SearchValues<char> NewLineChars = SearchValues.Create(NewLineCharsAsMemory.Span);
 		/// <summary>
+		/// Characters that are considered whitespace. (Space, Tab, Carriage return, Line feed)
+		/// </summary>
+		public static readonly ReadOnlyMemory<char> WhitespaceAsMemory = new char[] { ' ', '\t', '\r', '\n' };
+		/// <summary>
+		/// Characters that are considered whitespace. (Space, Tab, Carriage return, Line feed)
+		/// </summary>
+		public static readonly SearchValues<char> WhitespaceChars = SearchValues.Create(WhitespaceAsMemory.Span);
+		/// <summary>
 		/// Returns <see langword="true"/> if <paramref name="key"/> is not empty, whitespace, and does not contain any of <see cref="IllegalKeyChars"/>.
 		/// </summary>
 		/// <param name="key">The key to validate</param>

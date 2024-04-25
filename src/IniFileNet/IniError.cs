@@ -20,14 +20,14 @@
 		/// <summary>
 		/// The error message.
 		/// </summary>
-		public string Msg { get; }
+		public string? Msg { get; }
 		/// <summary>
 		/// Creates a new <see cref="IniException"/> with <see cref="Code"/> and <see cref="Msg"/>.
 		/// </summary>
 		/// <returns>A new <see cref="IniException"/></returns>
 		public IniException ToException()
 		{
-			return new IniException(Code, Msg);
+			return new IniException(Code, Msg ?? "");
 		}
 		/// <summary>
 		/// If <see cref="Code"/> is not equal to <see cref="IniErrorCode.None"/>, throws a <see cref="IniException"/> with the result of <see cref="ToException"/>.
