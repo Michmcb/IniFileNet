@@ -2,12 +2,12 @@
 {
 	using Xunit;
 
-	public static class CommentedValueTests
+	public static class IniValueTests
 	{
 		[Fact]
 		public static void EmptyComments()
 		{
-			CommentedValue cv = new("Foo");
+			IniValue<string> cv = new("Foo");
 			Assert.Equal("Foo", cv.Value);
 			Assert.Empty(cv.Comments);
 		}

@@ -29,8 +29,9 @@ using (IniStreamSectionReader iniIn = new(new IniStreamReader(new StreamReader(n
 		: new IniResult<DateTimeOffset>(default, new(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as DateTimeOffset"))));
 	IniValueAcceptorMany<int, HashSet<int>> seen = new(Parse.Int32);
 	Dictionary<string, IIniValueAcceptor> acceptors = b.Acceptors;
-	while (iniIn.TryReadNext(out var section))
+	while (iniIn.NextSection())
 	{
+		ReadOnlyIniSection section = iniIn.Section;
 		IniError err = section.AcceptAll(acceptors);
 		// Can explicitly do it this way
 		if (err.Code != default)

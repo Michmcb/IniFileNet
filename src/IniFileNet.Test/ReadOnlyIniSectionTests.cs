@@ -8,12 +8,12 @@
 		[Fact]
 		public static void AcceptAll()
 		{
-			ReadOnlyIniSection sect = new("Test", new KeyValue[]
-			{
+			ReadOnlyIniSection sect = new("Test",
+			[
 				new("Key1", "Value1"),
 				new("Key2", "Value2"),
 				new("Key3", "Value3"),
-			});
+			]);
 			IniValueAcceptorOnlyLast key1 = new();
 			IniValueAcceptorOnlyLast key4 = new();
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
@@ -28,11 +28,11 @@
 		[Fact]
 		public static void AcceptAllDuplicate()
 		{
-			ReadOnlyIniSection sect = new("Test", new KeyValue[]
-			{
+			ReadOnlyIniSection sect = new("Test",
+			[
 				new("Key", "Value"),
 				new("Key", "Value"),
-			});
+			]);
 			IniValueAcceptorSingle key = new();
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
 			{

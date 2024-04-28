@@ -57,7 +57,7 @@
 			return !key.IsEmpty && !key.IsWhiteSpace() && !key.ContainsAny(IllegalKeyChars);
 		}
 		/// <summary>
-		/// Returns <see langword="true"/> if <paramref name="name"/> is not empty and does not contain any of <see cref="IllegalKeyChars"/>.
+		/// Returns <see langword="true"/> if <paramref name="name"/> is not empty and does not contain any of <see cref="IllegalSectionNameChars"/>.
 		/// </summary>
 		/// <param name="name">The name to validate</param>
 		public static bool IsLegalSectionName(ReadOnlySpan<char> name)

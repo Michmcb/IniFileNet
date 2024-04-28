@@ -103,7 +103,7 @@
 			Writer.Write(NewLine);
 		}
 		/// <summary>
-		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.
+		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>

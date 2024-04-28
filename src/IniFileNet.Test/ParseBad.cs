@@ -22,7 +22,7 @@
 			await c1.Next(IniToken.Error, "=");
 			c1.Error(IniErrorCode.EmptyKeyName);
 
-			c2.Error(IniErrorCode.EmptyKeyName);
+			await c2.Error(IniErrorCode.EmptyKeyName);
 
 			await Chk.CheckAllIniDictionaryReader(EmptyKeyEqualsIni, default, new IniError(IniErrorCode.EmptyKeyName, "Error at character 0 in stream. This is the data where the error was encountered: ="), []);
 		}
@@ -43,7 +43,7 @@
 			await c1.Next(IniToken.Error, ":");
 			c1.Error(IniErrorCode.EmptyKeyName);
 
-			c2.Error(IniErrorCode.EmptyKeyName);
+			await c2.Error(IniErrorCode.EmptyKeyName);
 
 			await Chk.CheckAllIniDictionaryReader(EmptyKeyColonIni, EmptyKeyColonOpt, new IniError(IniErrorCode.EmptyKeyName, "Error at character 0 in stream. This is the data where the error was encountered: :"), []);
 		}
@@ -69,7 +69,7 @@
 			await c1.Next(IniToken.Error, "Key");
 			c1.Error(IniErrorCode.KeyDelimiterNotFound);
 
-			c2.Error(IniErrorCode.KeyDelimiterNotFound);
+			await c2.Error(IniErrorCode.KeyDelimiterNotFound);
 
 			await Chk.CheckAllIniDictionaryReader(KeyNoEqualsIni, default, new IniError(IniErrorCode.KeyDelimiterNotFound, "Error at character 3 in stream. This is the data where the error was encountered: Key"), []);
 		}
@@ -94,7 +94,7 @@
 			await c1.Next(IniToken.Error, "Key=Value");
 			c1.Error(IniErrorCode.SectionIsNotOnlyThingOnLine);
 
-			c2.Error(IniErrorCode.SectionIsNotOnlyThingOnLine);
+			await c2.Error(IniErrorCode.SectionIsNotOnlyThingOnLine);
 
 			await Chk.CheckAllIniDictionaryReader(SectionNotOnOwnLineIni, default, new IniError(IniErrorCode.SectionIsNotOnlyThingOnLine, "Error at character 9 in stream. This is the data where the error was encountered: Key=Value"), []);
 		}
@@ -120,7 +120,7 @@
 			await c1.Next(IniToken.Error, "Ke;y=Value");
 			c1.Error(IniErrorCode.SemicolonInKeyName);
 
-			c2.Error(IniErrorCode.SemicolonInKeyName);
+			await c2.Error(IniErrorCode.SemicolonInKeyName);
 
 			await Chk.CheckAllIniDictionaryReader(SemicolonInKeyNameIni, default, new IniError(IniErrorCode.SemicolonInKeyName, "Error at character 10 in stream. This is the data where the error was encountered: Ke;y=Value"), []);
 		}
@@ -141,7 +141,7 @@
 			await c1.Next(IniToken.Error, "Key=Value");
 			c1.Error(IniErrorCode.GlobalKeyNotAllowed);
 
-			c2.Error(IniErrorCode.GlobalKeyNotAllowed);
+			await c2.Error(IniErrorCode.GlobalKeyNotAllowed);
 
 			await Chk.CheckAllIniDictionaryReader(GlobalKeysNotAllowedIni, default, new IniError(IniErrorCode.GlobalKeyNotAllowed, "Error at character 0 in stream. This is the data where the error was encountered: Key=Value"), []);
 		}
@@ -162,7 +162,7 @@
 			await c1.Next(IniToken.Error, "#Key=Value");
 			c1.Error(IniErrorCode.GlobalKeyNotAllowed);
 
-			c2.Error(IniErrorCode.GlobalKeyNotAllowed);
+			await c2.Error(IniErrorCode.GlobalKeyNotAllowed);
 
 			await Chk.CheckAllIniDictionaryReader(GlobalKeysNotAllowedNumbersignIni, default, new IniError(IniErrorCode.GlobalKeyNotAllowed, "Error at character 0 in stream. This is the data where the error was encountered: #Key=Value"), []);
 		}
@@ -183,7 +183,7 @@
 			await c1.Next(IniToken.Error, ":Key=Value");
 			c1.Error(IniErrorCode.GlobalKeyNotAllowed);
 
-			c2.Error(IniErrorCode.GlobalKeyNotAllowed);
+			await c2.Error(IniErrorCode.GlobalKeyNotAllowed);
 
 			await Chk.CheckAllIniDictionaryReader(GlobalKeysNotAllowedColonIni, default, new IniError(IniErrorCode.GlobalKeyNotAllowed, "Error at character 0 in stream. This is the data where the error was encountered: :Key=Value"), []);
 		}
@@ -204,7 +204,7 @@
 			await c1.Next(IniToken.Error, "");
 			c1.Error(IniErrorCode.SectionCloseBracketNotFound);
 
-			c2.Error(IniErrorCode.SectionCloseBracketNotFound);
+			await c2.Error(IniErrorCode.SectionCloseBracketNotFound);
 
 			await Chk.CheckAllIniDictionaryReader(SectionEndOfSpan1Ini, default, new IniError(IniErrorCode.SectionCloseBracketNotFound, "Error at character 0 in stream. This is the data where the error was encountered: "), []);
 		}
@@ -225,7 +225,7 @@
 			await c1.Next(IniToken.Error, "");
 			c1.Error(IniErrorCode.SectionCloseBracketNotFound);
 
-			c2.Error(IniErrorCode.SectionCloseBracketNotFound);
+			await c2.Error(IniErrorCode.SectionCloseBracketNotFound);
 
 			await Chk.CheckAllIniDictionaryReader(SectionEndOfSpan2Ini, default, new IniError(IniErrorCode.SectionCloseBracketNotFound, "Error at character 0 in stream. This is the data where the error was encountered: "), []);
 		}

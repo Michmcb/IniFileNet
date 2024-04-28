@@ -8,7 +8,7 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniError(IniErrorCode error, string msg)
+		public IniError(IniErrorCode error, string? msg)
 		{
 			Code = error;
 			Msg = msg;

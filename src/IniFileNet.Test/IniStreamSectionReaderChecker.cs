@@ -3,17 +3,26 @@
 	using IniFileNet.IO;
 	using System;
 	using System.IO;
+	using System.Threading.Tasks;
 	using Xunit;
 	public readonly struct IniStreamSectionReaderChecker
 	{
-		private readonly IniStreamSectionReader reader;
+		private readonly IniStreamSectionReader readerSync;
+		private readonly IniStreamSectionReader readerAsync;
 		public IniStreamSectionReaderChecker(string ini, IniReaderOptions options = default)
 		{
-			reader = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), options));
+			readerSync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), options));
+			readerAsync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), options));
 		}
-		public void Next(ReadOnlyIniSection expected)
+		public async Task Next(ReadOnlyIniSection expected)
 		{
-			Assert.True(reader.TryReadNext(out ReadOnlyIniSection? actual));
+			Assert.True(readerSync.NextSection());
+			Assert.True(await readerAsync.NextSectionAsync());
+			Check(expected, readerSync.Section);
+			Check(expected, readerAsync.Section);
+		}
+		private static void Check(ReadOnlyIniSection expected, ReadOnlyIniSection actual)
+		{
 			Assert.Equal(expected.Name, actual.Name);
 			Assert.Equal(expected.KeyValues.Count, actual.KeyValues.Count);
 			Assert.Equal(expected.Comments.Count, actual.Comments.Count);
@@ -33,15 +42,29 @@
 				Assert.Equal(expected.Comments[i], actual.Comments[i]);
 			}
 		}
-		public void End()
+		public async Task End()
 		{
-			Assert.False(reader.TryReadNext(out _));
-			Assert.Equal(IniErrorCode.None, reader.Reader.Error.Code);
+			var s1 = readerSync.Section;
+			var s2 = readerAsync.Section;
+			Assert.False(readerSync.NextSection());
+			Assert.False(await readerAsync.NextSectionAsync());
+			Assert.Same(s1, readerSync.Section);
+			Assert.Same(s2, readerAsync.Section);
+			Assert.Equal(IniErrorCode.None, readerSync.Reader.Error.Code);
+			Assert.Equal(IniErrorCode.None, readerAsync.Reader.Error.Code);
 		}
-		public void Error(IniErrorCode errorCode)
+		public async Task Error(IniErrorCode errorCode)
 		{
-			Assert.False(reader.TryReadNext(out _));
-			Assert.Equal(errorCode, reader.Reader.Error.Code);
+			Assert.False(readerSync.NextSection());
+			Assert.False(await readerAsync.NextSectionAsync());
+			Assert.Equal(0, readerSync.Section.Name.Length);
+			Assert.Equal(0, readerAsync.Section.Name.Length);
+			Assert.Empty(readerSync.Section.KeyValues);
+			Assert.Empty(readerAsync.Section.KeyValues);
+			Assert.Empty(readerSync.Section.Comments);
+			Assert.Empty(readerAsync.Section.Comments);
+			Assert.Equal(errorCode, readerSync.Reader.Error.Code);
+			Assert.Equal(errorCode, readerAsync.Reader.Error.Code);
 		}
 	}
 }

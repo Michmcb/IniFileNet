@@ -1,6 +1,6 @@
 ﻿namespace IniFileNet
 {
-	using IniFileNet.IO;
+	using System;
 	using System.Collections.Generic;
 
 	/// <summary>
@@ -22,7 +22,27 @@
 		{
 			foreach (var acceptor in acceptors) { acceptor.Reset(); }
 		}
-
+		/// <summary>
+		/// Returns <paramref name="section"/> and <paramref name="key"/>, delimited by <paramref name="delimiter"/>.
+		/// If <paramref name="section"/> is empty, just returns <paramref name="key"/>.
+		/// It is not valid for <paramref name="key"/> to be empty, however; that will throw an <see cref="ArgumentException"/>.
+		/// </summary>
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
+		/// <param name="delimiter">The delimiter.</param>
+		/// <exception cref="ArgumentException">When <paramref name="key"/> is null or empty.</exception>
+		public static string GetFullKey(ReadOnlySpan<char> section, ReadOnlySpan<char> key, ReadOnlySpan<char> delimiter)
+		{
+			if (key.Length == 0) throw new ArgumentException("", nameof(key));
+			if (section.Length == 0)
+			{
+				return key.ToString();
+			}
+			else
+			{
+				return string.Concat(section, delimiter, key);
+			}
+		}
 		/// <summary>
 		/// Returns either a new <see cref="List{T}"/> or a new <see cref="EmptyList{T}"/>, depending on the value of <paramref name="ignoreComments"/>.
 		/// </summary>

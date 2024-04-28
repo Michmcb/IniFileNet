@@ -70,8 +70,8 @@
 		start:
 			// Done: Keys cannot be empty
 			// Done: Keys cannot contain ;
-			// TODO: Leading/Trailing whitespace around key name has to be ignored
-			// TODO: Check if Line continuations with trailing backslash are supposed to eat the newline characters or not
+			// TODO: Leading/Trailing whitespace around keys and values has to be ignored (reader options for both)
+			// TODO: Check if Line continuations with trailing backslash are supposed to eat the newline characters or not. I think it should eat the newline character, though.
 			// Done: Sections must appear on their own line
 			// Done: Case insensitivity (This is implemented by string comparers and client code)
 			// Done: Allow/disallow global keys (keys with no preceding section)
