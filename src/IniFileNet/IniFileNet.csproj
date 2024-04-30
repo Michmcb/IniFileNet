@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <Title>IniFileNet</Title>
-    <Version>0.2</Version>
+    <Version>0.3</Version>
     <Authors>Michael McBride</Authors>
     <Company></Company>
     <Product>IniFileNet</Product>
@@ -15,24 +15,30 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
-    <PackageReleaseNotes>- Added some more documentation
-- Added convenience class for making IniValueAcceptors
-- Added the documentation actually being added to the nuget package file (whoops)</PackageReleaseNotes>
+    <PackageReleaseNotes>- Renamed KeyValue to IniKeyValue, and it is now generic so it can accept a List of strings.
+- Added IniValue which doesn't hold the key, only the value and comments.
+- IniStreamSectionReader has both Read and ReadAsync now. Consequently its API has changed, since async methods cannot have out parameters.
+- IniError indicates that Msg can be null, which is the case for the default value.
+- Added IniDictionaryReader which can load an IniStreamReader into a dictionary, keyed by strings.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
     <None Include="..\icon.png">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

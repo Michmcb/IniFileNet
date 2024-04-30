@@ -2,7 +2,6 @@
 {
 	using System.Collections.Generic;
 	using Xunit;
-
 	public static class IniValueAcceptorTests
 	{
 		[Fact]

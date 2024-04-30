@@ -12,14 +12,14 @@
 		/// </summary>
 		/// <param name="name">The section name.</param>
 		/// <param name="keyValues">The keys and values.</param>
-		public ReadOnlyIniSection(string name, IReadOnlyList<KeyValue> keyValues) : this(name, keyValues, Array.Empty<string>()) { }
+		public ReadOnlyIniSection(string name, IReadOnlyList<IniKeyValue<string>> keyValues) : this(name, keyValues, Array.Empty<string>()) { }
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
 		/// <param name="name">The section name.</param>
 		/// <param name="keyValues">The keys and values.</param>
 		/// <param name="comments">The comments.</param>
-		public ReadOnlyIniSection(string name, IReadOnlyList<KeyValue> keyValues, IReadOnlyList<string> comments)
+		public ReadOnlyIniSection(string name, IReadOnlyList<IniKeyValue<string>> keyValues, IReadOnlyList<string> comments)
 		{
 			Name = name;
 			KeyValues = keyValues;
@@ -32,9 +32,9 @@
 		/// <summary>
 		/// The keys and values of this section. Key may or may not be unique, depending on the rules enforced in the source file.
 		/// </summary>
-		public IReadOnlyList<KeyValue> KeyValues { get; }
+		public IReadOnlyList<IniKeyValue<string>> KeyValues { get; }
 		/// <summary>
-		/// The comments read. This may be an empty collection if comments were ignored.
+		/// The comments preceding this section. This may be an empty collection if comments were ignored.
 		/// </summary>
 		public IReadOnlyList<string> Comments { get; }
 		/// <summary>
@@ -45,7 +45,7 @@
 		/// <returns>The first <see cref="IniError"/> that an <see cref="IIniValueAcceptor"/> returned.</returns>
 		public IniError AcceptAll(IReadOnlyDictionary<string, IIniValueAcceptor> acceptors)
 		{
-			foreach (KeyValue kv in KeyValues)
+			foreach (var kv in KeyValues)
 			{
 				if (acceptors.TryGetValue(kv.Key, out IIniValueAcceptor? acceptor))
 				{

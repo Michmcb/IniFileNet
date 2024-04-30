@@ -1,0 +1,11 @@
+0.3
+- Renamed KeyValue to IniKeyValue, and it is now generic so it can accept a List of strings.
+- Added IniValue which doesn't hold the key, only the value and comments.
+- IniStreamSectionReader has both NextSection and NextSectionAsync now. Consequently its API has changed, since async methods cannot have out parameters.
+- IniError indicates that Msg can be null, which is the case for the default value.
+- Added IniDictionaryReader which can load an IniStreamReader into a dictionary, keyed by strings.
+
+TODO
+IniReaderOptions: Implement trimming of keys and values. Separate options.
+
+IniStreamReader: Make sure that the StreamPosition property is accurate. This is a bit tricky, I guess? The best we could do is make sure that it always advances by the same number of characters as the content, except in the case of errors because those always give us until the end of the buffer.

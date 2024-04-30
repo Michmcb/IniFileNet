@@ -1,6 +1,7 @@
 ﻿namespace IniFileNet.IO
 {
 	using System;
+	using System.Globalization;
 	using System.IO;
 	using System.Text;
 	using System.Threading.Tasks;
@@ -14,7 +15,7 @@
 		/// </summary>
 		public const int DefaultBufferSize = 16384;
 		private readonly Memory<char> buf;
-		private int totalCharsRead = 0;
+		private int totalPosition = 0;
 		private IniSpanReaderState state;
 		private bool isFinalBlock;
 		private int currentDataSize;
@@ -45,7 +46,7 @@
 		/// <summary>
 		/// Gets the current position in <see cref="Reader"/>.
 		/// </summary>
-		public int StreamPosition => totalCharsRead + state.Position;
+		public int StreamPosition => totalPosition + state.Position;
 		/// <summary>
 		/// The configured options.
 		/// </summary>
@@ -80,11 +81,11 @@
 				{
 					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
 					//#if NETSTANDARD2_0
-					//					int charsRead = Reader.Read(buf, leftover, buf.Length - leftover);
+					//int charsRead = Reader.Read(buf, leftover, buf.Length - leftover);
 					//#else
 					int charsRead = Reader.Read(buf.Span.Slice(copied));
 					//#endif
-					totalCharsRead += charsRead;
+					totalPosition += copied;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -116,7 +117,7 @@
 					//#else
 					int charsRead = await Reader.ReadAsync(buf.Slice(copied));
 					//#endif
-					totalCharsRead += charsRead;
+					totalPosition += copied;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -168,7 +169,7 @@
 					case IniContentType.Error:
 						state = sr.GetState();
 						string s = ic.Content.ToString();
-						Error = new(sr.ErrorCode, string.Concat("Error at character ", StreamPosition, " in stream. This is the data where the error was encountered: ", s));
+						Error = new(sr.ErrorCode, string.Concat("Error at character ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream. This is the data where the error was encountered: ", s));
 						return new ReadResult(IniToken.Error, s);
 				}
 			}

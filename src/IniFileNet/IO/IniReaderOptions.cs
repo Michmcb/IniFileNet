@@ -31,8 +31,8 @@
 		/// </summary>
 		public bool AllowKeyDelimiterColon { get; }
 		/// <summary>
-		/// Allows a backslash preceding a \r or \n to denote a value that continues onto the next line.
-		/// Be careful about using windows paths if you use this option, as say C:\foo\bar\ may be misinterpreted as a line continuation!
+		/// Allows a backslash preceding a carriage return or linefeed to denote a value that continues onto the next line.
+		/// Be careful about using windows paths if you use this option, as say, the final slash in C:\foo\bar\ may be misinterpreted as a line continuation!
 		/// </summary>
 		public bool AllowLineContinuations { get; }
 		/// <summary>

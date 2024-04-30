@@ -25,5 +25,17 @@
 		/// The error.
 		/// </summary>
 		public IniError Error { get; }
+		/// <summary>
+		/// Returns <see langword="true"/> if <see cref="Error"/> has an error code of <see cref="IniErrorCode.None"/>. Otherwise, returns <see langword="false"/>.
+		/// </summary>
+		/// <param name="value">Set to the value of <see cref="Value"/>.</param>
+		/// <param name="error">Set to the value of <see cref="Error"/>.</param>
+		/// <returns><see langword="true"/> if <see cref="Error"/> has an error code of <see cref="IniErrorCode.None"/>. Otherwise, <see langword="false"/>.</returns>
+		public bool Ok(out T value, out IniError error)
+		{
+			value = Value;
+			error= Error;
+			return Error.Code == IniErrorCode.None;
+		}
 	}
 }

@@ -1,7 +1,6 @@
 ﻿namespace IniFileNet.Test
 {
 	using Xunit;
-
 	public static class IniErrorTests
 	{
 		[Fact]

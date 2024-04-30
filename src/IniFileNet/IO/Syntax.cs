@@ -41,6 +41,14 @@
 		/// </summary>
 		public static readonly SearchValues<char> NewLineChars = SearchValues.Create(NewLineCharsAsMemory.Span);
 		/// <summary>
+		/// Characters that are considered whitespace. (Space, Tab, Carriage return, Line feed)
+		/// </summary>
+		public static readonly ReadOnlyMemory<char> WhitespaceAsMemory = new char[] { ' ', '\t', '\r', '\n' };
+		/// <summary>
+		/// Characters that are considered whitespace. (Space, Tab, Carriage return, Line feed)
+		/// </summary>
+		public static readonly SearchValues<char> WhitespaceChars = SearchValues.Create(WhitespaceAsMemory.Span);
+		/// <summary>
 		/// Returns <see langword="true"/> if <paramref name="key"/> is not empty, whitespace, and does not contain any of <see cref="IllegalKeyChars"/>.
 		/// </summary>
 		/// <param name="key">The key to validate</param>
@@ -49,7 +57,7 @@
 			return !key.IsEmpty && !key.IsWhiteSpace() && !key.ContainsAny(IllegalKeyChars);
 		}
 		/// <summary>
-		/// Returns <see langword="true"/> if <paramref name="name"/> is not empty and does not contain any of <see cref="IllegalKeyChars"/>.
+		/// Returns <see langword="true"/> if <paramref name="name"/> is not empty and does not contain any of <see cref="IllegalSectionNameChars"/>.
 		/// </summary>
 		/// <param name="name">The name to validate</param>
 		public static bool IsLegalSectionName(ReadOnlySpan<char> name)
