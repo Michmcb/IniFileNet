@@ -61,6 +61,12 @@
 		/// </summary>
 		/// <param name="name">The section name.</param>
 		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.</exception>
+		public void WriteSection(string name) => WriteSection(name.AsSpan());
+		/// <summary>
+		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// </summary>
+		/// <param name="name">The section name.</param>
+		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.</exception>
 		public void WriteSection(ReadOnlySpan<char> name)
 		{
 			if (!Syntax.IsLegalSectionName(name)) throw new ArgumentException("Illegal section name", nameof(name));
@@ -74,12 +80,22 @@
 		/// </summary>
 		/// <param name="comment">The comment text.</param>
 		/// <param name="replaceLineBreaks">If true, line breaks within <paramref name="comment"/> will be replaced with <see cref="NewLine"/></param>
+		public void WriteComment(string comment, bool replaceLineBreaks = true) => WriteComment(comment.AsSpan(), replaceLineBreaks);
+		/// <summary>
+		/// Writes a comment.
+		/// </summary>
+		/// <param name="comment">The comment text.</param>
+		/// <param name="replaceLineBreaks">If true, line breaks within <paramref name="comment"/> will be replaced with <see cref="NewLine"/></param>
 		public void WriteComment(ReadOnlySpan<char> comment, bool replaceLineBreaks = true)
 		{
 			Writer.Write(CommentStart);
 
 			int nl;
+#if NET8_0_OR_GREATER
 			while ((nl = comment.IndexOfAny(Syntax.NewLineChars)) != -1)
+#else
+			while ((nl = comment.IndexOfAny(Syntax.NewLineCharsAsMemory.Span)) != -1)
+#endif
 			{
 				Writer.Write(comment.Slice(0, nl));
 				// If we hit \r and the next character is \n, we skip 2
@@ -103,7 +119,14 @@
 			Writer.Write(NewLine);
 		}
 		/// <summary>
-		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.</exception>
+		public void WriteKeyValue(string key, string value) => WriteKeyValue(key.AsSpan(), value.AsSpan());
+		/// <summary>
+		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>

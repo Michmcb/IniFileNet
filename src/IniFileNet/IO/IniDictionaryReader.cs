@@ -96,7 +96,7 @@
 		/// <returns>Always <see langword="default"/>.</returns>
 		public static IniError StringOnlyLast(Dictionary<string, string> dict, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments)
 		{
-			string fullKey = Util.GetFullKey(section, key, sectionKeyDelimiter.Span);
+			string fullKey = Util.GetFullKey(section.AsSpan(), key.AsSpan(), sectionKeyDelimiter.Span);
 			dict[fullKey] = value;
 			return default;
 		}
@@ -113,7 +113,7 @@
 		/// <returns>Always <see langword="default"/>.</returns>
 		public static IniError StringOnlyFirst(Dictionary<string, string> dict, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments)
 		{
-			string fullKey = Util.GetFullKey(section, key, sectionKeyDelimiter.Span);
+			string fullKey = Util.GetFullKey(section.AsSpan(), key.AsSpan(), sectionKeyDelimiter.Span);
 			if (!dict.ContainsKey(fullKey))
 			{
 				dict[fullKey] = value;
@@ -134,7 +134,7 @@
 		/// <returns>If the key does not exist, <see langword="default"/>. Otherwise, <see cref="IniErrorCode.ValueAlreadyPresent"/>.</returns>
 		public static IniError StringSingle(Dictionary<string, string> dict, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments)
 		{
-			string fullKey = Util.GetFullKey(section, key, sectionKeyDelimiter.Span);
+			string fullKey = Util.GetFullKey(section.AsSpan(), key.AsSpan(), sectionKeyDelimiter.Span);
 			if (dict.ContainsKey(fullKey))
 			{
 				return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Section & key already present. Full Key: \"", fullKey, "\". Value is: \"", value, "\""));
@@ -155,7 +155,7 @@
 		/// <returns>Always <see langword="default"/>.</returns>
 		public static IniError StringMany(Dictionary<string, List<string>> dict, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments)
 		{
-			string fullKey = Util.GetFullKey(section, key, sectionKeyDelimiter.Span);
+			string fullKey = Util.GetFullKey(section.AsSpan(), key.AsSpan(), sectionKeyDelimiter.Span);
 			if (dict.TryGetValue(fullKey, out var values))
 			{
 				values.Add(value);

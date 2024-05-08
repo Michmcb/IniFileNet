@@ -43,7 +43,6 @@
 					key = rr.Content;
 					return default;
 				case IniToken.Value:
-					string fullKey = string.IsNullOrEmpty(section) ? key : string.Concat(section, sectionKeyDelimiter, key);
 					var c = commentsReadOnly;
 					(comments, commentsReadOnly) = Util.GetCommentList(ignoreComments);
 					return addValue(Dict, section, key, sectionKeyDelimiter, rr.Content, lastSectionComments, c);

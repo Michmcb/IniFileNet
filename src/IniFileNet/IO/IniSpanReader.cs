@@ -1,7 +1,11 @@
-﻿namespace IniFileNet.IO
+﻿#pragma warning disable IDE0057 // Use range operator
+namespace IniFileNet.IO
 {
 	using System;
 	using System.Buffers;
+	using System.Diagnostics;
+	using System.Numerics;
+	using System.Runtime.CompilerServices;
 
 	/// <summary>
 	/// A low level stack-allocated ini reader that parses blocks of text.
@@ -12,7 +16,12 @@
 		private IniSpanReaderBlockState _state;
 		private IniErrorCode _error;
 		private int _position;
-		private readonly SearchValues<char> keyEndChars;
+#if NET8_0_OR_GREATER
+		private readonly System.Buffers.SearchValues<char>
+#else
+		private readonly ReadOnlySpan<char>
+#endif
+			keyEndChars;
 		/// <summary>
 		/// Creates a new instance with the current <paramref name="state"/>.
 		/// </summary>
@@ -21,7 +30,11 @@
 		/// <param name="isFinalBlock">If this is the final block of data, set this to <see langword="true"/>.</param>
 		public IniSpanReader(ReadOnlySpan<char> block, IniSpanReaderState state, bool isFinalBlock)
 		{
+#if NET8_0_OR_GREATER
 			keyEndChars = state.Options.AllowKeyDelimiterColon ? Syntax.EqColonSemicolon : Syntax.EqSemicolon;
+#else
+			keyEndChars = state.Options.AllowKeyDelimiterColon ? Syntax.EqColonSemicolonAsMemory.Span : Syntax.EqSemicolonAsMemory.Span;
+#endif
 			Block = block;
 			_state = state.State;
 			_position = state.Position;
@@ -65,8 +78,8 @@
 		/// </summary>
 		public IniContent Read()
 		{
-			// Instead of calling this function recursively, we just goto the beginning. The reason is because if we have lots and lots
-			// of contiguous comments, then eventually we'll cause a StackOverflowException.
+		// Instead of calling this function recursively, we just goto the beginning. The reason is because if we have lots and lots
+		// of contiguous comments, then eventually we'll cause a StackOverflowException.
 		start:
 			// Done: Keys cannot be empty
 			// Done: Keys cannot contain ;
@@ -160,7 +173,7 @@
 								_position = start;
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.KeyDelimiterNotFound;
-								return new(IniContentType.Error, Block[start..]);
+								return new(IniContentType.Error, Block.Slice(start));
 							}
 							else
 							{
@@ -176,10 +189,10 @@
 								_position = start;
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.SemicolonInKeyName;
-								return new(IniContentType.Error, Block[start..]);
+								return new(IniContentType.Error, Block.Slice(start));
 							}
 							_state = IniSpanReaderBlockState.KeyEnded;
-							return new IniContent(IniContentType.Key, Block[start.._position]);
+							return new IniContent(IniContentType.Key, Block.Slice(start, _position - start));
 						}
 					}
 				case IniSpanReaderBlockState.KeyEnded:
@@ -217,8 +230,8 @@
 								// it doesn't exist
 								_state = IniSpanReaderBlockState.ValueEnded;
 								var content = (Block[Block.Length - 1] == '\\' && Options.AllowLineContinuations)
-									? Block[start..(Block.Length - 1)]
-									: Block[start..];
+									? Block.Slice(start, (Block.Length - 1) - start)
+									: Block.Slice(start);
 								return new(IniContentType.Value, content);
 							}
 							else
@@ -231,14 +244,14 @@
 									_position = Block.Length - 1;
 									// Additionally, if the content is empty, then that means we've consumed everything up to the backslash
 									// So we say that we hit the end to avoid getting stuck in an infinite loop of empty value content
-									var content = Block[start..(Block.Length - 1)];
+									var content = Block.Slice(start, (Block.Length - 1) - start);
 									return content.Length == 0
 										? new(IniContentType.End, default)
 										: new(IniContentType.Value, content);
 								}
 								else
 								{
-									return new(IniContentType.Value, Block[start..]);
+									return new(IniContentType.Value, Block.Slice(start));
 								}
 							}
 						}
@@ -248,12 +261,12 @@
 							{
 								int end = _position - 1;
 								++_position;
-								return new(IniContentType.Value, Block[start..end]);
+								return new(IniContentType.Value, Block.Slice(start, end - start));
 							}
 							else
 							{
 								_state = IniSpanReaderBlockState.ValueEnded;
-								return new(IniContentType.Value, Block[start.._position]);
+								return new(IniContentType.Value, Block.Slice(start, _position - start));
 							}
 						}
 					}
@@ -293,7 +306,7 @@
 							}
 							else
 							{
-								return new(IniContentType.Comment, Block[start..]);
+								return new(IniContentType.Comment, Block.Slice(start));
 							}
 						}
 						else
@@ -305,7 +318,7 @@
 							}
 							else
 							{
-								return new(IniContentType.Comment, Block[start.._position]);
+								return new(IniContentType.Comment, Block.Slice(start, _position - start));
 							}
 						}
 					}
@@ -342,7 +355,7 @@
 							{
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.SectionCloseBracketNotFound;
-								return new(IniContentType.Error, Block[start..]);
+								return new(IniContentType.Error, Block.Slice(start));
 							}
 							else
 							{
@@ -357,14 +370,14 @@
 								_position = start;
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.SectionCloseBracketNotFound;
-								return new(IniContentType.Error, Block[start..]);
+								return new(IniContentType.Error, Block.Slice(start));
 							}
-							return new(IniContentType.Section, Block[start..]);
+							return new(IniContentType.Section, Block.Slice(start));
 						}
 						else
 						{
 							_state = IniSpanReaderBlockState.SectionEnded;
-							return new(IniContentType.Section, Block[start.._position]);
+							return new(IniContentType.Section, Block.Slice(start, _position - start));
 						}
 					}
 				case IniSpanReaderBlockState.SectionEnded:
@@ -376,12 +389,12 @@
 					{
 						int start = _position;
 						AdvanceToNewLine();
-						if (!Block[start.._position].IsWhiteSpace())
+						if (!Block.Slice(start, _position - start).IsWhiteSpace())
 						{
 							_position = start;
 							_state = IniSpanReaderBlockState.Error;
 							_error = IniErrorCode.SectionIsNotOnlyThingOnLine;
-							return new(IniContentType.Error, Block[start..]);
+							return new(IniContentType.Error, Block.Slice(start));
 						}
 						if (_position >= Block.Length)
 						{
@@ -395,7 +408,7 @@
 					}
 				default:
 				case IniSpanReaderBlockState.Error:
-					return new(IniContentType.Error, _position < Block.Length ? Block[_position..] : default);
+					return new(IniContentType.Error, _position < Block.Length ? Block.Slice(_position) : default);
 			}
 		}
 		private IniContent GetCharContentAndAdvancePosition(IniContentType tok)
@@ -406,31 +419,82 @@
 		}
 		private void SkipWhitespace()
 		{
-			int i = Block[_position..].IndexOfAnyExcept(Syntax.WhitespaceChars);
+#if NET8_0_OR_GREATER
+			int i = Block.Slice(_position).IndexOfAnyExcept(Syntax.WhitespaceChars);
+
+#elif NET7_0_OR_GREATER
+			int i = Block.Slice(_position).IndexOfAnyExcept(Syntax.WhitespaceAsMemory.Span);
+#else
+			int i = IndexOfAnyExcept(Block.Slice(_position), Syntax.WhitespaceAsMemory.Span);
+#endif
 			_position = i == -1
 				? Block.Length
 				: i + _position;
 		}
+#if !NET7_0_OR_GREATER
+		private static int IndexOfAnyExcept(ReadOnlySpan<char> block, ReadOnlySpan<char> chars)
+		{
+			return chars.Length switch
+			{
+				4 => IndexOfAnyExcept(block, chars[0], chars[1], chars[2], chars[3]),
+				// As of right now, we are only EVER using this with Syntax.WhitespaceChars. So we just throw if it's anything other than 4
+				// If we ever use other lengths, we'll implement them. Anything above 5 will use the loop below. It's fully implemented, just not tested.
+				_ => throw new NotImplementedException(),
+			};
+			//for (int i = 0; i < block.Length; ++i)
+			//{
+			//	// If at least one of the characters match, then keep going.
+			//	// If none of the characters match, return.
+			//	char c1 = block[i];
+			//	int j = 0;
+			//	for (; j < chars.Length; ++j)
+			//	{
+			//		if (c1 == chars[j]) break;
+			//	}
+			//	if (j == chars.Length) return i;
+			//}
+			//return -1;
+		}
+		private static int IndexOfAnyExcept(ReadOnlySpan<char> block, char c0, char c1, char c2, char c3)
+		{
+			for (int i = 0; i < block.Length; ++i)
+			{
+				char c = block[i];
+				if (c != c0 && c != c1 && c != c2 && c != c3) { return i; }
+			}
+			return -1;
+		}
+#endif
 		private void AdvanceTo(char c)
 		{
-			int i = Block[_position..].IndexOf(c);
+			int i = Block.Slice(_position).IndexOf(c);
 			_position = i == -1
 				? Block.Length
 				: i + _position;
 		}
-		private static int AdvanceToAny(ReadOnlySpan<char> block, int position, SearchValues<char> c)
+#if NET8_0_OR_GREATER
+		private static int AdvanceToAny(ReadOnlySpan<char> block, int position, System.Buffers.SearchValues<char> c)
+#else
+		private static int AdvanceToAny(ReadOnlySpan<char> block, int position, ReadOnlySpan<char> c)
+#endif
 		{
-			int i = block[position..].IndexOfAny(c);
+			int i = block.Slice(position).IndexOfAny(c);
 			return i == -1
 				? block.Length
 				: i + position;
 		}
 		private void AdvanceToNewLine()
 		{
-			int i = Block[_position..].IndexOfAny(Syntax.NewLineChars);
+#if NET8_0_OR_GREATER
+			int i = Block.Slice(_position).IndexOfAny(Syntax.NewLineChars);
+#else
+			int i = Block.Slice(_position).IndexOfAny(Syntax.NewLineCharsAsMemory.Span);
+#endif
 			_position = i == -1
 				? Block.Length
 				: i + _position;
 		}
+
 	}
 }
+#pragma warning restore IDE0057 // Use range operator
