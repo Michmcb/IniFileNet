@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <Title>IniFileNet</Title>
-    <Version>0.3</Version>
+    <Version>0.4</Version>
     <Authors>Michael McBride</Authors>
     <Company></Company>
     <Product>IniFileNet</Product>
@@ -15,11 +15,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
-    <PackageReleaseNotes>- Renamed KeyValue to IniKeyValue, and it is now generic so it can accept a List of strings.
-- Added IniValue which doesn't hold the key, only the value and comments.
-- IniStreamSectionReader has both Read and ReadAsync now. Consequently its API has changed, since async methods cannot have out parameters.
-- IniError indicates that Msg can be null, which is the case for the default value.
-- Added IniDictionaryReader which can load an IniStreamReader into a dictionary, keyed by strings.</PackageReleaseNotes>
+    <PackageReleaseNotes>- net6.0, net7.0, and .netstandard2.0 are supported in addition to net8.0.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -39,6 +35,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.*" Condition="'$(TargetFramework)'=='netstandard2.0'" />
   </ItemGroup>
 
 </Project>

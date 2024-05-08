@@ -40,7 +40,16 @@
 			}
 			else
 			{
+#if NETSTANDARD2_0
+				char[] chars = new char[section.Length + delimiter.Length + key.Length];
+				Span<char> str = chars;
+				section.CopyTo(str);
+				delimiter.CopyTo(str.Slice(section.Length));
+				key.CopyTo(str.Slice(section.Length + delimiter.Length));
+				return new string(chars);
+#else
 				return string.Concat(section, delimiter, key);
+#endif
 			}
 		}
 		/// <summary>

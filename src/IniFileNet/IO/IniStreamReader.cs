@@ -14,7 +14,11 @@
 		/// The default buffer size.
 		/// </summary>
 		public const int DefaultBufferSize = 16384;
+#if NETSTANDARD2_0
+		private readonly char[] buf;
+#else
 		private readonly Memory<char> buf;
+#endif
 		private int totalPosition = 0;
 		private IniSpanReaderState state;
 		private bool isFinalBlock;
@@ -79,12 +83,13 @@
 				}
 				else
 				{
+#if NETSTANDARD2_0
+					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
+					int charsRead = Reader.Read(buf, copied, buf.Length - copied);
+#else
 					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					//#if NETSTANDARD2_0
-					//int charsRead = Reader.Read(buf, leftover, buf.Length - leftover);
-					//#else
 					int charsRead = Reader.Read(buf.Span.Slice(copied));
-					//#endif
+#endif
 					totalPosition += copied;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
@@ -111,12 +116,13 @@
 				}
 				else
 				{
+#if NETSTANDARD2_0
+					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
+					int charsRead = await Reader.ReadAsync(buf, copied, buf.Length - copied);
+#else
 					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					//#if NETSTANDARD2_0
-					//					int charsRead = Reader.Read(buf, leftover, buf.Length - leftover);
-					//#else
 					int charsRead = await Reader.ReadAsync(buf.Slice(copied));
-					//#endif
+#endif
 					totalPosition += copied;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
@@ -125,7 +131,13 @@
 		}
 		internal ReadResult? ReadInternal(StringBuilder contentBuilder)
 		{
-			IniSpanReader sr = new(buf.Slice(0, currentDataSize).Span, state, isFinalBlock);
+			IniSpanReader sr = new(
+#if NETSTANDARD2_0
+			buf.AsSpan(0, currentDataSize)
+#else
+			buf.Slice(0, currentDataSize).Span
+#endif
+				, state, isFinalBlock);
 			IniToken token = IniToken.End;
 			while (token == IniToken.End)
 			{
@@ -149,7 +161,11 @@
 					case IniContentType.Value:
 					case IniContentType.Section:
 					case IniContentType.Comment:
+#if NETSTANDARD2_0
+						contentBuilder.Append(ic.Content.ToString());
+#else
 						contentBuilder.Append(ic.Content);
+#endif
 						break;
 
 					case IniContentType.EndKey:
