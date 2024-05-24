@@ -9,8 +9,11 @@
 - net6.0, net7.0, and .netstandard2.0 are supported in addition to net8.0.
 
 0.5
-- Option for trimming strings
-- Methods on IniValueAcceptors
+- IniValueAcceptors hold their key, to provide better error messages
+- IniValueAcceptors have convenience methods for getting a default value or throwing an exception
+- IniStreamReader can be configured to trim section, key, and value content
+
+
 
 
 
