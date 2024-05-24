@@ -18,7 +18,7 @@
 		{
 			key = "";
 			section = "";
-			(comments, commentsReadOnly) = Util.GetCommentList(ignoreComments);
+			(comments, commentsReadOnly) = IniUtil.GetCommentList(ignoreComments);
 			lastSectionComments = Array.Empty<string>();
 			this.sectionKeyDelimiter = sectionKeyDelimiter;
 			this.addValue = addValue;
@@ -34,7 +34,7 @@
 					section = rr.Content;
 					// All of the comments that we have seen so far apply to this section
 					lastSectionComments = commentsReadOnly;
-					(comments, commentsReadOnly) = Util.GetCommentList(ignoreComments);
+					(comments, commentsReadOnly) = IniUtil.GetCommentList(ignoreComments);
 					return default;
 				case IniToken.Comment:
 					comments.Add(rr.Content);
@@ -44,7 +44,7 @@
 					return default;
 				case IniToken.Value:
 					var c = commentsReadOnly;
-					(comments, commentsReadOnly) = Util.GetCommentList(ignoreComments);
+					(comments, commentsReadOnly) = IniUtil.GetCommentList(ignoreComments);
 					return addValue(Dict, section, key, sectionKeyDelimiter, rr.Content, lastSectionComments, c);
 				default:
 				case IniToken.End:

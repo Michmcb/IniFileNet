@@ -24,7 +24,7 @@
 		/// <summary>
 		/// Creates a new <see cref="IniException"/> with <see cref="Code"/> and <see cref="Msg"/>.
 		/// </summary>
-		/// <returns>A new <see cref="IniException"/></returns>
+		/// <returns>A new <see cref="IniException"/>.</returns>
 		public IniException ToException()
 		{
 			return new IniException(Code, Msg ?? "");
@@ -46,6 +46,15 @@
 		public override string? ToString()
 		{
 			return string.Concat(Code.ToString(), ": ", Msg);
+		}
+		/// <summary>
+		/// Returns an <see cref="IniError"/> with an <see cref="IniErrorCode"/> and error message representing a missing key with name <paramref name="key"/>.
+		/// </summary>
+		/// <param name="key">The key name that is missing.</param>
+		/// <returns>An <see cref="IniError"/>.</returns>
+		public static IniError KeyMissingValue(string key)
+		{
+			return new(IniErrorCode.ValueMissing, string.Concat("The key \"", key, "\" was missing a value"));
 		}
 	}
 }

@@ -147,7 +147,8 @@
 		{
 			StringWriter sw = new();
 			using IniStreamWriter writer = new(sw, NewLineStyle.Lf, leaveOpen: true);
-			Assert.Throws<ArgumentException>(() => writer.WriteSection(default));
+			Assert.Throws<ArgumentException>(() => writer.WriteSection(null!));
+			Assert.Throws<ArgumentException>(() => writer.WriteSection(""));
 			Assert.Throws<ArgumentException>(() => writer.WriteSection("[hey"));
 			Assert.Throws<ArgumentException>(() => writer.WriteSection("]hey"));
 			Assert.Throws<ArgumentException>(() => writer.WriteSection(";hey"));
@@ -160,7 +161,8 @@
 		{
 			StringWriter sw = new();
 			using IniStreamWriter writer = new(sw, NewLineStyle.Lf, leaveOpen: true);
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(default, "Value"));
+			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(null!, "Value"));
+			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("", "Value"));
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(" ", "Value"));
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("\t", "Value"));
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("=hey", "Value"));

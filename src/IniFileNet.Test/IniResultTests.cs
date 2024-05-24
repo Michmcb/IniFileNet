@@ -20,5 +20,15 @@
 				Chk.IniError(IniErrorCode.EmptySectionName, "Foo", error);
 			}
 		}
+		[Fact]
+		public static void ValueOrException()
+		{
+			IniResult<int> iniResultOk = new(20, new IniError(IniErrorCode.None, null));
+			Assert.Equal(20, iniResultOk.ValueOrException());
+			IniResult<int> iniResultBad = new(default, new IniError(IniErrorCode.ValueInvalid, "Foo"));
+			var ex = Assert.ThrowsAny<IniException>(() => iniResultBad.ValueOrException());
+			Assert.Equal(IniErrorCode.ValueInvalid, ex.IniErrorCode);
+			Assert.Equal("Foo", ex.Message);
+		}
 	}
 }

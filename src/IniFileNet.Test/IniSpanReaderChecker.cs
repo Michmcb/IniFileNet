@@ -10,11 +10,11 @@
 		{
 			this.reader = reader;
 		}
-		public readonly IniReaderOptions Options => reader.Options;
 		public IniSpanReaderChecker(string ini, IniReaderOptions options = default, bool isFinalBlock = true)
 		{
 			reader = new IniSpanReader(ini, IniSpanReaderState.Init(options), isFinalBlock);
 		}
+		public readonly IniReaderOptions Options => reader.Options;
 		public readonly IniSpanReaderChecker NewBlock(string ini, bool isFinalBlock)
 		{
 			IniSpanReader newReader = new(ini, reader.GetState().NewBlock(default, default, out _), isFinalBlock);

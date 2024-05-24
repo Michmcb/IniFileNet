@@ -7,15 +7,15 @@
 		[Fact]
 		public static void ResetAll()
 		{
-			IniValueAcceptorSingle s1 = new();
-			IniValueAcceptorSingle s2 = new();
-			IniValueAcceptorSingle s3 = new();
+			IniValueAcceptorSingle s1 = new("key");
+			IniValueAcceptorSingle s2 = new("key");
+			IniValueAcceptorSingle s3 = new("key");
 			foreach (var v in new IIniValueAcceptor[] { s1, s2, s3 })
 			{
-				v.Accept("k", "v");
+				v.Accept("v");
 			}
 
-			Util.ResetAll(s1, s2, s3);
+			IniUtil.ResetAll(s1, s2, s3);
 			Assert.Null(s1.Value);
 			Assert.Null(s2.Value);
 			Assert.Null(s3.Value);

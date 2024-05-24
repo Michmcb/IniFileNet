@@ -6,12 +6,15 @@
 	public interface IIniValueAcceptor
 	{
 		/// <summary>
-		/// Accepts a key and value. If an error occurred during processing, returns the error.
+		/// The key of this value acceptor.
 		/// </summary>
-		/// <param name="key">The key.</param>
+		string Key { get; }
+		/// <summary>
+		/// Accepts value. If an error occurred during processing, returns the error.
+		/// </summary>
 		/// <param name="value">The value.</param>
 		/// <returns>The error, if any.</returns>
-		IniError Accept(string key, string value);
+		IniError Accept(string value);
 		/// <summary>
 		/// Resets the value so this can be re-used.
 		/// </summary>

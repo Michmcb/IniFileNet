@@ -6,7 +6,7 @@
 	/// <summary>
 	/// Utility functions.
 	/// </summary>
-	public static class Util
+	public static class IniUtil
 	{
 		/// <summary>
 		/// Calls <see cref="IIniValueAcceptor.Reset"/> on all <paramref name="acceptors"/>.

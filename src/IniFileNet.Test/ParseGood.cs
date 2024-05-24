@@ -232,7 +232,25 @@ namespace IniFileNet.Test
 			c.Next(IniContentType.EndSection, "]");
 			c.Next(IniContentType.End, default);
 		}
-		public const string MultipleKeyValuesIni = "[Section]\rKey1=Value1\nKey2 = Value2";
+		public const string TrimmableIni = "[ Section ]\n Key = Value ";
+		[Fact]
+		public static async Task TrimmableIniStream()
+		{
+			var (c1, c2) = Checks.For(TrimmableIni, new(trimSections: true, trimKeys: true, trimValues: true));
+			await c1.Next(IniToken.Section, "Section");
+			await c1.Next(IniToken.Key, "Key");
+			await c1.Next(IniToken.Value, "Value");
+			await c1.Next(IniToken.End, "");
+
+			await c2.Next(new("Section", [new("Key", "Value")], []));
+			await c2.End();
+
+			await Chk.CheckAllIniDictionaryReader(TrimmableIni, new(trimSections: true, trimKeys: true, trimValues: true), default,
+			[
+				x => Assert.Equal(new("Section.Key", "Value"), x),
+			]);
+		}
+		public const string MultipleKeyValuesIni = "[Section]\rKey1=Value1\nKey2 = Value2 ";
 		[Fact]
 		public static void MultipleKeyValuesSpan()
 		{
@@ -250,7 +268,7 @@ namespace IniFileNet.Test
 			c.Next(IniContentType.Key, "Key2 ");
 			c.Next(IniContentType.EndKey, "=");
 			c.Next(IniContentType.StartValue, default);
-			c.Next(IniContentType.Value, " Value2");
+			c.Next(IniContentType.Value, " Value2 ");
 			c.Next(IniContentType.EndValue, default);
 			c.Next(IniContentType.End, default);
 		}
@@ -262,16 +280,16 @@ namespace IniFileNet.Test
 			await c1.Next(IniToken.Key, "Key1");
 			await c1.Next(IniToken.Value, "Value1");
 			await c1.Next(IniToken.Key, "Key2 ");
-			await c1.Next(IniToken.Value, " Value2");
+			await c1.Next(IniToken.Value, " Value2 ");
 			await c1.Next(IniToken.End, "");
 
-			await c2.Next(new("Section", [new("Key1", "Value1"), new("Key2 ", " Value2")], []));
+			await c2.Next(new("Section", [new("Key1", "Value1"), new("Key2 ", " Value2 ")], []));
 			await c2.End();
 
 			await Chk.CheckAllIniDictionaryReader(MultipleKeyValuesIni, default, default,
 			[
 				x => Assert.Equal(new("Section.Key1", "Value1"), x),
-				x => Assert.Equal(new("Section.Key2 ", " Value2"), x),
+				x => Assert.Equal(new("Section.Key2 ", " Value2 "), x),
 			]);
 			//await Chk.CheckAllIniDictionaryReader(MultipleKeyValuesIni, default, default,
 			//[

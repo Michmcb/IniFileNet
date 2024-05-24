@@ -1,7 +1,7 @@
 ﻿namespace IniFileNet.IO
 {
 	/// <summary>
-	/// Options to configure how an ini file is parsed.
+	/// Options to configure how to parse an ini file.
 	/// </summary>
 	public readonly struct IniReaderOptions
 	{
@@ -14,7 +14,10 @@
 			bool allowCommentsNumberSign = false,
 			bool allowKeyDelimiterColon = false,
 			bool allowLineContinuations = false,
-			bool ignoreComments = false
+			bool ignoreComments = false,
+			bool trimSections = false,
+			bool trimKeys = false,
+			bool trimValues = false
 		)
 		{
 			AllowGlobalKeys = allowGlobalKeys;
@@ -22,6 +25,9 @@
 			AllowKeyDelimiterColon = allowKeyDelimiterColon;
 			AllowLineContinuations = allowLineContinuations;
 			IgnoreComments = ignoreComments;
+			TrimSections = trimSections;
+			TrimKeys = trimKeys;
+			TrimValues = trimValues;
 		}
 		/// <summary>
 		/// Allows keys to appear without a section appearing first.
@@ -46,5 +52,30 @@
 		/// When reading, all comments are ignored.
 		/// </summary>
 		public bool IgnoreComments { get; }
+		/// <summary>
+		/// When reading, all section names will be trimmed.
+		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// </summary>
+		public bool TrimSections { get; }
+		/// <summary>
+		/// When reading, all keys will be trimmed.
+		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// </summary>
+		public bool TrimKeys { get; }
+		/// <summary>
+		/// When reading, all values will be trimmed.
+		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// </summary>
+		public bool TrimValues { get; }
+		///// <summary>
+		///// Creates a new instance of <see cref="IniReaderOptions"/> with the relevant options copied.
+		///// </summary>
+		///// <param name="options">The value to convert.</param>
+		//public static implicit operator IniReaderOptions(IniReaderOptions options) => new(options.AllowGlobalKeys, options.AllowCommentsNumberSign, options.AllowKeyDelimiterColon, options.AllowLineContinuations, options.IgnoreComments);
+		///// <summary>
+		///// Creates a new instance of <see cref="IniStreamReaderOptions"/> with the relevant options copied.
+		///// </summary>
+		///// <param name="options">The value to convert.</param>
+		//public static implicit operator IniStreamReaderOptions(IniReaderOptions options) => new(options.TrimSections, options.TrimKeys, options.TrimValues);
 	}
 }

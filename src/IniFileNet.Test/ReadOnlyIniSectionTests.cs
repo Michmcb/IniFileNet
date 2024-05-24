@@ -14,8 +14,8 @@
 				new("Key2", "Value2"),
 				new("Key3", "Value3"),
 			]);
-			IniValueAcceptorOnlyLast key1 = new();
-			IniValueAcceptorOnlyLast key4 = new();
+			IniValueAcceptorOnlyLast key1 = new("key");
+			IniValueAcceptorOnlyLast key4 = new("key");
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
 			{
 				["Key1"] = key1,
@@ -33,7 +33,7 @@
 				new("Key", "Value"),
 				new("Key", "Value"),
 			]);
-			IniValueAcceptorSingle key = new();
+			IniValueAcceptorSingle key = new("Key");
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
 			{
 				["Key"] = key,

@@ -17,23 +17,23 @@
 	[MemoryDiagnoser]
 	public class AcceptorTypes
 	{
-		private readonly IniValueAcceptorOnlyFirst f1 = new();
-		private readonly IniValueAcceptorOnlyLast l1 = new();
-		private readonly IniValueAcceptorSingle s1 = new();
+		private readonly IniValueAcceptorOnlyFirst f1 = new("key");
+		private readonly IniValueAcceptorOnlyLast l1 = new("key");
+		private readonly IniValueAcceptorSingle s1 = new("key");
 		[Benchmark]
 		public IniError AcceptFirst1()
 		{
-			return f1.Accept("Key", "Value");
+			return f1.Accept("Value");
 		}
 		[Benchmark]
 		public IniError AcceptLast1()
 		{
-			return l1.Accept("Key", "Value");
+			return l1.Accept("Value");
 		}
 		[Benchmark]
 		public IniError AcceptSingle1()
 		{
-			return s1.Accept("Key", "Value");
+			return s1.Accept("Value");
 		}
 	}
 }
