@@ -50,11 +50,12 @@
 		/// <summary>
 		/// Returns an <see cref="IniError"/> with an <see cref="IniErrorCode"/> and error message representing a missing key with name <paramref name="key"/>.
 		/// </summary>
+		/// <param name="section">The section name that is missing.</param>
 		/// <param name="key">The key name that is missing.</param>
 		/// <returns>An <see cref="IniError"/>.</returns>
-		public static IniError KeyMissingValue(string key)
+		public static IniError KeyMissingValue(string? section, string key)
 		{
-			return new(IniErrorCode.ValueMissing, string.Concat("The key \"", key, "\" was missing a value"));
+			return new(IniErrorCode.ValueMissing, string.Concat("The section \"", section, "\" key \"", key, "\" was missing a value"));
 		}
 	}
 }

@@ -9,7 +9,7 @@
 - net6.0, net7.0, and .netstandard2.0 are supported in addition to net8.0.
 
 0.5
-- IniValueAcceptors hold their key, to provide better error messages
+- IniValueAcceptors accept the section and key, to provide better error messages
 - IniValueAcceptors have convenience methods for getting a default value or throwing an exception
 - IniStreamReader can be configured to trim section, key, and value content
 
@@ -18,7 +18,6 @@
 
 
 TODO
-
 The only real reason we would have to split the options up is because the span reader doesn't use all of them. Other than that we may as well keep it all in one struct.
 
 

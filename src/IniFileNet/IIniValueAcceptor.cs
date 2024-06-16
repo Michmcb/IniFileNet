@@ -6,17 +6,23 @@
 	public interface IIniValueAcceptor
 	{
 		/// <summary>
-		/// The key of this value acceptor.
+		/// The last successfully accepted section of this value acceptor.
 		/// </summary>
-		string Key { get; }
+		string Section { get; set; }
+		/// <summary>
+		/// The last successfully accepted key of this value acceptor.
+		/// </summary>
+		string Key { get; set; }
 		/// <summary>
 		/// Accepts value. If an error occurred during processing, returns the error.
 		/// </summary>
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The error, if any.</returns>
-		IniError Accept(string value);
+		IniError Accept(string section, string key, string value);
 		/// <summary>
-		/// Resets the value so this can be re-used.
+		/// Resets the value, <see cref="Section"/>, and <see cref="Key"/> so this can be re-used.
 		/// </summary>
 		void Reset();
 		/// <summary>

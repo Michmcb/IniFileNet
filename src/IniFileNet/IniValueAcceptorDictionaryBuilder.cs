@@ -27,7 +27,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorOnlyFirst OnlyFirst(string key)
 		{
-			IniValueAcceptorOnlyFirst i = new(key);
+			IniValueAcceptorOnlyFirst i = new();
 			Acceptors[key] = i;
 			return i;
 		}
@@ -39,7 +39,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorOnlyFirst<T> OnlyFirst<T>(string key, Func<string, IniResult<T>> parse)
 		{
-			IniValueAcceptorOnlyFirst<T> i = new(key, parse);
+			IniValueAcceptorOnlyFirst<T> i = new(parse);
 			Acceptors[key] = i;
 			return i;
 		}
@@ -50,7 +50,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorOnlyLast OnlyLast(string key)
 		{
-			IniValueAcceptorOnlyLast i = new(key);
+			IniValueAcceptorOnlyLast i = new();
 			Acceptors[key] = i;
 			return i;
 		}
@@ -62,7 +62,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorOnlyLast<T> OnlyLast<T>(string key, Func<string, IniResult<T>> parse)
 		{
-			IniValueAcceptorOnlyLast<T> i = new(key, parse);
+			IniValueAcceptorOnlyLast<T> i = new(parse);
 			Acceptors[key] = i;
 			return i;
 		}
@@ -73,7 +73,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorSingle Single(string key)
 		{
-			IniValueAcceptorSingle i = new(key);
+			IniValueAcceptorSingle i = new();
 			Acceptors[key] = i;
 			return i;
 		}
@@ -85,7 +85,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorSingle<T> Single<T>(string key, Func<string, IniResult<T>> parse)
 		{
-			IniValueAcceptorSingle<T> i = new(key, parse);
+			IniValueAcceptorSingle<T> i = new(parse);
 			Acceptors[key] = i;
 			return i;
 		}
@@ -96,7 +96,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorMany Many(string key)
 		{
-			IniValueAcceptorMany i = new(key);
+			IniValueAcceptorMany i = new();
 			Acceptors[key] = i;
 			return i;
 		}
@@ -108,7 +108,7 @@
 		/// <returns>The acceptor.</returns>
 		public IniValueAcceptorMany<T, C> Many<T, C>(string key, Func<string, IniResult<T>> parse) where C : ICollection<T>, new()
 		{
-			IniValueAcceptorMany<T, C> i = new(key, parse);
+			IniValueAcceptorMany<T, C> i = new(parse);
 			Acceptors[key] = i;
 			return i;
 		}

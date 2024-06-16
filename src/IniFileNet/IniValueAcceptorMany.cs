@@ -12,26 +12,26 @@
 		/// <summary>
 		/// Creates a new instance with a new empty list.
 		/// </summary>
-		/// <param name="key">The key associated with the values that are to be accepted.</param>
-		public IniValueAcceptorMany(string key) : this(key, []) { }
+		public IniValueAcceptorMany() : this([]) { }
 		/// <summary>
 		/// Creates a new instance with a new empty list, with a capacity of <paramref name="capacity"/>.
 		/// </summary>
-		/// <param name="key">The key associated with the values that are to be accepted.</param>
 		/// <param name="capacity">The number of elements that the new list can initially store.</param>
-		public IniValueAcceptorMany(string key, int capacity) : this(key, new List<string>(capacity)) { }
+		public IniValueAcceptorMany(int capacity) : this(new List<string>(capacity)) { }
 		/// <summary>
 		/// Creates a new instance which will fill the provided list.
 		/// </summary>
-		/// <param name="key">The key associated with the values that are to be accepted.</param>
 		/// <param name="values">The list of values to fill.</param>
-		public IniValueAcceptorMany(string key, List<string> values)
+		public IniValueAcceptorMany(List<string> values)
 		{
-			Key = key;
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = values;
 		}
 		/// <inheritdoc/>
-		public string Key { get; }
+		public string Section { get; set; }
+		/// <inheritdoc/>
+		public string Key { get; set; }
 		/// <summary>
 		/// The values accepted so far.
 		/// </summary>
@@ -43,17 +43,25 @@
 		/// <summary>
 		/// Adds <paramref name="value"/> to <see cref="Value"/>. Always returns <see cref="IniErrorCode.None"/>.
 		/// </summary>
-		public IniError Accept(string value)
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		public IniError Accept(string section, string key, string value)
 		{
+			Section = section;
+			Key = key;
 			Value.Add(value);
 			return default;
 		}
 		/// <summary>
 		/// Replaces <see cref="Value"/> with a new list.
 		/// Doesn't clear out the old list, so you don't need to take a defensive copy of it.
+		/// Sets <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
 		/// </summary>
 		public void Reset()
 		{
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = [];
 		}
 		/// <summary>
@@ -72,7 +80,7 @@
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<List<string>> ValueOrError()
 		{
-			return HaveValue ? new IniResult<List<string>>(Value, default) : new(null!, IniError.KeyMissingValue(Key));
+			return HaveValue ? new IniResult<List<string>>(Value, default) : new(null!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
 		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
@@ -80,7 +88,7 @@
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public List<string> ValueOrException()
 		{
-			return HaveValue ? Value : throw IniError.KeyMissingValue(Key).ToException();
+			return HaveValue ? Value : throw IniError.KeyMissingValue(Section, Key).ToException();
 		}
 	}
 	/// <summary>
@@ -92,23 +100,24 @@
 		/// <summary>
 		/// Creates a new instance with a new empty list.
 		/// </summary>
-		/// <param name="key">The key associated with the values that are to be accepted.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorMany(string key, Func<string, IniResult<T>> parse) : this(key, new(), parse) { }
+		public IniValueAcceptorMany(Func<string, IniResult<T>> parse) : this(new(), parse) { }
 		/// <summary>
 		/// Creates a new instance which will fill the provided list.
 		/// </summary>
-		/// <param name="key">The key associated with the values that are to be accepted.</param>
 		/// <param name="values">The list of values to fill.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorMany(string key, C values, Func<string, IniResult<T>> parse)
+		public IniValueAcceptorMany(C values, Func<string, IniResult<T>> parse)
 		{
-			Key = key;
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = values;
 			Parse = parse;
 		}
 		/// <inheritdoc/>
-		public string Key { get; }
+		public string Section { get; set; }
+		/// <inheritdoc/>
+		public string Key { get; set; }
 		/// <summary>
 		/// The values accepted so far.
 		/// </summary>
@@ -124,13 +133,17 @@
 		/// <summary>
 		/// Calls <see cref="Parse"/>. If that is successful, adds the value to <see cref="Value"/>. Otherwise, returns an error.
 		/// </summary>
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
 		/// <returns><see cref="IniErrorCode.None"/> on success, or an error code on failure.</returns>
-		public IniError Accept(string value)
+		public IniError Accept(string section, string key, string value)
 		{
 			var p = Parse(value);
 			if (p.Error.Code == default)
 			{
+				Section = section;
+				Key = key;
 				Value.Add(p.Value);
 			}
 			return p.Error;
@@ -138,9 +151,12 @@
 		/// <summary>
 		/// Replaces <see cref="Value"/> with a new collection of type <typeparamref name="C"/>.
 		/// Doesn't clear out the old collection, so you don't need to take a defensive copy of it.
+		/// Sets <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
 		/// </summary>
 		public void Reset()
 		{
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = new();
 		}
 		/// <summary>
@@ -159,7 +175,7 @@
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<C> ValueOrError()
 		{
-			return HaveValue ? new IniResult<C>(Value, default) : new(default!, IniError.KeyMissingValue(Key));
+			return HaveValue ? new IniResult<C>(Value, default) : new(default!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
 		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
@@ -167,7 +183,7 @@
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public C ValueOrException()
 		{
-			return HaveValue ? Value : throw IniError.KeyMissingValue(Key).ToException();
+			return HaveValue ? Value : throw IniError.KeyMissingValue(Section, Key).ToException();
 		}
 	}
 }

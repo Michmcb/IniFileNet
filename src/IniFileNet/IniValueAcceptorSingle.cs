@@ -11,13 +11,15 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		/// <param name="key">The key associated with the value that is to be accepted.</param>
-		public IniValueAcceptorSingle(string key)
+		public IniValueAcceptorSingle()
 		{
-			Key = key;
+			Section = string.Empty;
+			Key = string.Empty;
 		}
 		/// <inheritdoc/>
-		public string Key { get; }
+		public string Section { get; set; }
+		/// <inheritdoc/>
+		public string Key { get; set; }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -30,22 +32,35 @@
 		/// Updates <see cref="Value"/> if <see cref="HaveValue"/> returns <see langword="false"/>.
 		/// Otherwise, returns an error <see cref="IniErrorCode.ValueAlreadyPresent"/>.
 		/// </summary>
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
 		/// <returns><see cref="IniErrorCode.None"/> on success, or <see cref="IniErrorCode.ValueAlreadyPresent"/> if a value has already been accepted.</returns>
-		public IniError Accept(string value)
+		public IniError Accept(string section, string key, string value)
 		{
 			if (Value != null)
 			{
-				return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Key: \"", Key, "\". Value is: \"", value, "\""));
+				if (Section == section && Key == key)
+				{
+					return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Section: \"", section, "\" Key: \"", key, "\". Value is: \"", value, "\""));
+				}
+				else
+				{
+					return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. This Section: \"", section, "\" Key: \"", key, "\". Last Section: \"", Section, "\" Key: \"", Key, "\". Value is: \"", value, "\""));
+				}
 			}
 			else Value = value;
+			Section = section;
+			Key = key;
 			return default;
 		}
 		/// <summary>
-		/// Resets <see cref="Value"/> to <see langword="null"/>.
+		/// Resets <see cref="Value"/> to <see langword="null"/>, and <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
 		/// </summary>
 		public void Reset()
 		{
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = null;
 		}
 		/// <summary>
@@ -64,7 +79,7 @@
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<string> ValueOrError()
 		{
-			return Value != null ? new IniResult<string>(Value, default) : new(null!, IniError.KeyMissingValue(Key));
+			return Value != null ? new IniResult<string>(Value, default) : new(null!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
 		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
@@ -72,7 +87,7 @@
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public string ValueOrException()
 		{
-			return Value ?? throw IniError.KeyMissingValue(Key).ToException();
+			return Value ?? throw IniError.KeyMissingValue(Section, Key).ToException();
 		}
 	}
 	/// <summary>
@@ -83,15 +98,17 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		/// <param name="key">The key associated with the value that is to be accepted.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorSingle(string key, Func<string, IniResult<T>> parse)
+		public IniValueAcceptorSingle(Func<string, IniResult<T>> parse)
 		{
-			Key = key;
+			Section = string.Empty;
+			Key = string.Empty;
 			Parse = parse;
 		}
 		/// <inheritdoc/>
-		public string Key { get; }
+		public string Section { get; set; }
+		/// <inheritdoc/>
+		public string Key { get; set; }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -108,27 +125,33 @@
 		/// If <see cref="HaveValue"/> is <see langword="true"/>, returns an error <see cref="IniErrorCode.ValueAlreadyPresent"/>.
 		/// Otherwise, calls <see cref="Parse"/>. If that is successful, updates <see cref="Value"/>. Otherwise, returns an error.
 		/// </summary>
+		/// <param name="section">The section name.</param>
+		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
 		/// <returns><see cref="IniErrorCode.None"/> on success, or an error code on failure.</returns>
-		public IniError Accept(string value)
+		public IniError Accept(string section, string key, string value)
 		{
 			if (HaveValue)
 			{
-				return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Key: \"", Key, "\". Value is: \"", value, "\""));
+				return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Key: \"", key, "\". Value is: \"", value, "\""));
 			}
 			var p = Parse(value);
 			if (p.Error.Code == default)
 			{
+				Section = section;
+				Key = key;
 				HaveValue = true;
 				Value = p.Value;
 			}
 			return p.Error;
 		}
 		/// <summary>
-		/// Resets <see cref="Value"/> to <see langword="null"/> and <see cref="HaveValue"/> to <see langword="false"/>.
+		/// Resets <see cref="Value"/> to <see langword="null"/> and <see cref="HaveValue"/> to <see langword="false"/>, and <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
 		/// </summary>
 		public void Reset()
 		{
+			Section = string.Empty;
+			Key = string.Empty;
 			Value = default;
 			HaveValue = false;
 		}
@@ -148,7 +171,7 @@
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<T> ValueOrError()
 		{
-			return HaveValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Key));
+			return HaveValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
 		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
@@ -156,7 +179,7 @@
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public T ValueOrException()
 		{
-			return HaveValue ? Value : throw IniError.KeyMissingValue(Key).ToException();
+			return HaveValue ? Value : throw IniError.KeyMissingValue(Section, Key).ToException();
 		}
 	}
 }

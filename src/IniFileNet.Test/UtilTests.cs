@@ -7,12 +7,12 @@
 		[Fact]
 		public static void ResetAll()
 		{
-			IniValueAcceptorSingle s1 = new("key");
-			IniValueAcceptorSingle s2 = new("key");
-			IniValueAcceptorSingle s3 = new("key");
+			IniValueAcceptorSingle s1 = new();
+			IniValueAcceptorSingle s2 = new();
+			IniValueAcceptorSingle s3 = new();
 			foreach (var v in new IIniValueAcceptor[] { s1, s2, s3 })
 			{
-				v.Accept("v");
+				v.Accept("", "key", "v");
 			}
 
 			IniUtil.ResetAll(s1, s2, s3);
