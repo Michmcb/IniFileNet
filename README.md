@@ -45,14 +45,14 @@ using (IniStreamSectionReader iniIn = new(new IniStreamReader(new StreamReader(n
 		targets.Add(new Target
 		(
 			name: section.Name,
-			url: url.Value ?? throw new IniException(IniErrorCode.ValueMissing, "Url is required for " + section.Name),
-			outputTemplate: outputTemplate.Value ?? throw new IniException(IniErrorCode.ValueMissing, "OutputTemplate is required for " + section.Name),
+			url: url.ValueOrException(),
+			outputTemplate: outputTemplate.ValueOrException(),
 			ask: ask.Value,
 			regex: regex.Value,
 			latest: latest.Value,
-			seen: seen.Values
+			seen: seen.Value
 		));
-		Util.ResetAll(acceptors.Values);
+		IniUtil.ResetAll(acceptors.Values);
 	}
 	iniIn.Reader.Error.ThrowIfError();
 }

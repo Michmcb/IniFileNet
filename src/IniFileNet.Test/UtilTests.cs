@@ -12,10 +12,10 @@
 			IniValueAcceptorSingle s3 = new();
 			foreach (var v in new IIniValueAcceptor[] { s1, s2, s3 })
 			{
-				v.Accept("k", "v");
+				v.Accept("", "key", "v");
 			}
 
-			Util.ResetAll(s1, s2, s3);
+			IniUtil.ResetAll(s1, s2, s3);
 			Assert.Null(s1.Value);
 			Assert.Null(s2.Value);
 			Assert.Null(s3.Value);

@@ -38,7 +38,7 @@
 			{
 				["Key"] = key,
 			};
-			Assert.Equal(new IniError(IniErrorCode.ValueAlreadyPresent, "Already accepted a value. Key: \"Key\". Value is: \"Value\""), sect.AcceptAll(acceptors));
+			Assert.Equal(new IniError(IniErrorCode.ValueAlreadyPresent, "Already accepted a value. Section: \"Test\" Key: \"Key\". Value is: \"Value\""), sect.AcceptAll(acceptors));
 		}
 	}
 }

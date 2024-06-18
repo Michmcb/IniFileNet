@@ -39,7 +39,7 @@
 		public IReadOnlyList<string> Comments { get; }
 		/// <summary>
 		/// Loops through all <see cref="KeyValues"/>, and if there is an <see cref="IIniValueAcceptor"/> with a matching key in <paramref name="acceptors"/>, invokes
-		/// <see cref="IIniValueAcceptor.Accept(string, string)"/> with the key and value.
+		/// <see cref="IIniValueAcceptor.Accept(string, string, string)"/> with <see cref="Name"/>, key and value.
 		/// </summary>
 		/// <param name="acceptors">The acceptors.</param>
 		/// <returns>The first <see cref="IniError"/> that an <see cref="IIniValueAcceptor"/> returned.</returns>
@@ -49,7 +49,7 @@
 			{
 				if (acceptors.TryGetValue(kv.Key, out IIniValueAcceptor? acceptor))
 				{
-					var e = acceptor.Accept(kv.Key, kv.Value);
+					var e = acceptor.Accept(Name, kv.Key, kv.Value);
 					if (e.Code != IniErrorCode.None) return e;
 				}
 			}

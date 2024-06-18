@@ -13,7 +13,7 @@
 		/// </summary>
 		public IniStreamSectionReader(IniStreamReader reader, bool leaveOpen = false)
 		{
-			state = new(reader.Options.IgnoreComments);
+			state = new(reader.Options);
 			Reader = reader;
 			LeaveOpen = leaveOpen;
 			Section = state.CompleteSection;
@@ -42,7 +42,7 @@
 			while (go)
 			{
 				ReadResult rr = Reader.Read();
-				go = state.Handle(rr, Reader.Options);
+				go = state.Handle(rr);
 			}
 			Section = state.CompleteSection;
 			return state.Ok;
@@ -59,7 +59,7 @@
 			while (go)
 			{
 				ReadResult rr = await Reader.ReadAsync();
-				go = state.Handle(rr, Reader.Options);
+				go = state.Handle(rr);
 			}
 			Section = state.CompleteSection;
 			return state.Ok;

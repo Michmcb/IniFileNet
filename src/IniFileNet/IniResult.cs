@@ -26,6 +26,15 @@
 		/// </summary>
 		public IniError Error { get; }
 		/// <summary>
+		/// Returns <see cref="Value"/> if <see cref="Error"/> has an error code of <see cref="IniErrorCode.None"/>.
+		/// Otherwise, throws the exception returned by <see cref="IniError.ToException"/>.
+		/// </summary>
+		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
+		public T ValueOrException()
+		{
+			return Error.Code == IniErrorCode.None ? Value : throw Error.ToException();
+		}
+		/// <summary>
 		/// Returns <see langword="true"/> if <see cref="Error"/> has an error code of <see cref="IniErrorCode.None"/>. Otherwise, returns <see langword="false"/>.
 		/// </summary>
 		/// <param name="value">Set to the value of <see cref="Value"/>.</param>
@@ -34,7 +43,7 @@
 		public bool Ok(out T value, out IniError error)
 		{
 			value = Value;
-			error= Error;
+			error = Error;
 			return Error.Code == IniErrorCode.None;
 		}
 	}

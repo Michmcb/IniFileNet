@@ -190,7 +190,15 @@
 				}
 			}
 			state = sr.GetState();
-			return new ReadResult(token, contentBuilder.ToString());
+			// TODO optimize this; we can just have a trim method for the content builder
+			string content = token switch
+			{
+				IniToken.Section => Options.TrimSections ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
+				IniToken.Key => Options.TrimKeys ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
+				IniToken.Value => Options.TrimValues ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
+				_ => contentBuilder.ToString(),
+			};
+			return new ReadResult(token, content);
 		}
 		/// <summary>
 		/// Disposes of <see cref="Reader"/> if <see cref="LeaveOpen"/> is <see langword="false"/>. Otherwise, does nothing.

@@ -8,11 +8,22 @@
 0.4
 - net6.0, net7.0, and .netstandard2.0 are supported in addition to net8.0.
 
+0.5
+- IniValueAcceptors accept the section and key, to provide better error messages
+- IniValueAcceptors have convenience methods for getting a default value or throwing an exception
+- IniStreamReader can be configured to trim section, key, and value content
+
+
 
 
 
 TODO
+The only real reason we would have to split the options up is because the span reader doesn't use all of them. Other than that we may as well keep it all in one struct.
+
+
 IniReaderOptions: Implement trimming of keys and values. Separate options.
 The thing is, since the IniSpanReader can read things in multiple chunks (but maybe not keys), it's a little bit tricky to do trimming. Considering that we may get an aribtrary amount of whitespace before we reach the next significant character, It is not exactly feasible to perform trimming within the IniSpanReader. Trimming would have to be performed on the level of an IniStreamReader.
+
+We can kinda implement the escape characters in the span reader. It just has to stop on the \, and return that as "escape character" or something. Then return it. It is up to the caller how to interpret that escape character though.
 
 IniStreamReader: Make sure that the StreamPosition property is accurate. This is a bit tricky, I guess? The best we could do is make sure that it always advances by the same number of characters as the content, except in the case of errors because those always give us until the end of the buffer.

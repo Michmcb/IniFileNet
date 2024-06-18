@@ -23,17 +23,17 @@
 		[Benchmark]
 		public IniError AcceptFirst1()
 		{
-			return f1.Accept("Key", "Value");
+			return f1.Accept("s", "k", "Value");
 		}
 		[Benchmark]
 		public IniError AcceptLast1()
 		{
-			return l1.Accept("Key", "Value");
+			return l1.Accept("s", "k", "Value");
 		}
 		[Benchmark]
 		public IniError AcceptSingle1()
 		{
-			return s1.Accept("Key", "Value");
+			return s1.Accept("s", "k", "Value");
 		}
 	}
 }

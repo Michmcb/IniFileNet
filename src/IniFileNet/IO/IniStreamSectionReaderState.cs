@@ -9,16 +9,18 @@
 		private IReadOnlyList<string> commentsReadOnly;
 		private string key;
 		private readonly ReadOnlyIniSection emptySection;
+		private readonly IniReaderOptions options;
 		private ReadOnlyIniSection currentSection;
-		internal IniStreamSectionReaderState(bool ignoreComments)
+		internal IniStreamSectionReaderState(IniReaderOptions options)
 		{
 			keyValues = [];
-			(comments, commentsReadOnly) = Util.GetCommentList(ignoreComments);
+			(comments, commentsReadOnly) = IniUtil.GetCommentList(options.IgnoreComments);
 			key = "";
 			emptySection = new("", []);
 			currentSection = new("", keyValues, commentsReadOnly);
 			CompleteSection = emptySection;
 			Ok = true;
+			this.options = options;
 		}
 		internal bool SeenEnd;
 		internal bool Ok;
@@ -26,7 +28,7 @@
 		/// <summary>
 		/// Returns true if we need more data. False if we don't.
 		/// </summary>
-		internal bool Handle(ReadResult rr, IniReaderOptions options)
+		internal bool Handle(ReadResult rr)
 		{
 			// What do is this, basically:
 			// When we hit a section, remember that as the current section, and set Section as the last section we fully read
@@ -38,7 +40,7 @@
 				case IniToken.Section:
 					CompleteSection = currentSection;
 					currentSection = new(rr.Content, keyValues = [], commentsReadOnly);
-					(comments, commentsReadOnly) = Util.GetCommentList(options.IgnoreComments);
+					(comments, commentsReadOnly) = IniUtil.GetCommentList(options.IgnoreComments);
 					if (CompleteSection.Name.Length > 0 || options.AllowGlobalKeys)
 					{
 						return false;
@@ -49,7 +51,7 @@
 					break;
 				case IniToken.Value:
 					keyValues.Add(new(key, rr.Content, commentsReadOnly));
-					(comments, commentsReadOnly) = Util.GetCommentList(options.IgnoreComments);
+					(comments, commentsReadOnly) = IniUtil.GetCommentList(options.IgnoreComments);
 					break;
 				case IniToken.Comment:
 					comments.Add(rr.Content);

@@ -6,10 +6,19 @@
 	using System.IO;
 	using System.Threading.Tasks;
 	using Xunit;
-	using Xunit.Sdk;
 
 	public static class Chk
 	{
+		public static void IniResult<T>(T expected, IniErrorCode code, IniResult<T> actual)
+		{
+			Assert.Equal(expected, actual.Value);
+			Assert.Equal(code, actual.Error.Code);
+		}
+		public static void IniResult<T>(T expected, IniErrorCode code, string? msg, IniResult<T> actual)
+		{
+			Assert.Equal(expected, actual.Value);
+			IniError(code, msg, actual.Error);
+		}
 		public static void IniError(IniErrorCode code, string? msg, IniError actual)
 		{
 			Assert.Equal(code, actual.Code);

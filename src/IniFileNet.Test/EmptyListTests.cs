@@ -1,6 +1,7 @@
 ﻿namespace IniFileNet.Test
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using Xunit;
 	public static class EmptyListTests
@@ -29,12 +30,17 @@
 			x.Add(0);
 			x.Insert(0, 0);
 			Assert.False(x.Remove(0));
+			// We want to specifically invoke Contains to test that method
+#pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
+			Assert.False(x.Contains(0));
+#pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
 			Assert.DoesNotContain(0, x);
 			Assert.Equal(-1, x.IndexOf(0));
 			x.Clear();
 			int[] y = [1];
 			x.CopyTo(y, 0);
 			Assert.Equal(1, y[0]);
+			Assert.False(((IEnumerable)x).GetEnumerator().MoveNext());
 		}
 	}
 }
