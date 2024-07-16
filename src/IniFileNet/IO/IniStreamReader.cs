@@ -190,7 +190,7 @@
 				}
 			}
 			state = sr.GetState();
-			// TODO optimize this; we can just have a trim method for the content builder
+			// TODO optimize this; we can just have a trim method for the content builder. Considering how often we'll have a single append followed by ToString(), we should benchmark this performance compared to a list of strings or something.
 			string content = token switch
 			{
 				IniToken.Section => Options.TrimSections ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
