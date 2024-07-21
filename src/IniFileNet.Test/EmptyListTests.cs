@@ -1,5 +1,6 @@
 ﻿namespace IniFileNet.Test
 {
+	using IniFileNet.IO;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;

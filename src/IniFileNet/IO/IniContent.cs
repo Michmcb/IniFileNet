@@ -1,7 +1,6 @@
 ﻿namespace IniFileNet.IO
 {
 	using System;
-
 	/// <summary>
 	/// Content of an .ini text stream that was that was read.
 	/// </summary>

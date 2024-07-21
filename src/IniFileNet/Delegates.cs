@@ -16,4 +16,15 @@
 	/// <param name="keyValueComments">The comments preceding the key and value.</param>
 	/// <returns>On success, <see langword="default"/>. On failure, an <see cref="IniError"/>.</returns>
 	public delegate IniError AddDictionaryValue<T>(Dictionary<string, T> dictionary, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments);
+	/// <summary>
+	/// This delegate is intended to provide valid text that doesn't require escaping to something.
+	/// </summary>
+	/// <param name="text">The valid text.</param>
+	public delegate void ValidTextCallback(ReadOnlySpan<char> text);
+	/// <summary>
+	/// This delegate is intended to provide the significant character of an escape sequence to something.
+	/// For example, the 'n' of "\n", to represent a newline.
+	/// </summary>
+	/// <param name="c">The character of the escape sequence.</param>
+	public delegate void EscapeCharCallback(char c);
 }

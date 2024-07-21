@@ -67,7 +67,7 @@
 
 			{
 				StringWriter sw = new();
-				using (IniStreamWriter writer = new(sw, NewLineStyle.Lf, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
+				using (IniStreamWriter writer = new(sw, NewLineStyle.Lf, null, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
 				{
 					writer.WriteComment("Comment");
 					writer.WriteBlankLine();
@@ -78,7 +78,7 @@
 			}
 			{
 				StringWriter sw = new();
-				using (IniStreamWriter writer = new(sw, NewLineStyle.Cr, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
+				using (IniStreamWriter writer = new(sw, NewLineStyle.Cr, null, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
 				{
 					writer.WriteComment("Comment");
 					writer.WriteBlankLine();
@@ -89,7 +89,7 @@
 			}
 			{
 				StringWriter sw = new();
-				using (IniStreamWriter writer = new(sw, NewLineStyle.CrLf, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
+				using (IniStreamWriter writer = new(sw, NewLineStyle.CrLf, null, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
 				{
 					writer.WriteComment("Comment");
 					writer.WriteBlankLine();
@@ -101,7 +101,7 @@
 			{
 				StringWriter sw = new();
 				string newline;
-				using (IniStreamWriter writer = new(sw, NewLineStyle.Platform, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
+				using (IniStreamWriter writer = new(sw, NewLineStyle.Platform, null, KeyDelimStyle.Colon, CommentStyle.NumberSign, leaveOpen: true))
 				{
 					newline = writer.NewLine.Span.ToString();
 					writer.WriteComment("Comment");
@@ -149,12 +149,30 @@
 			using IniStreamWriter writer = new(sw, NewLineStyle.Lf, leaveOpen: true);
 			Assert.Throws<ArgumentException>(() => writer.WriteSection(null!));
 			Assert.Throws<ArgumentException>(() => writer.WriteSection(""));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection("[hey"));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection("]hey"));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection(";hey"));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection("#hey"));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection("he\ny"));
-			Assert.Throws<ArgumentException>(() => writer.WriteSection("h\rey"));
+		}
+		private static string WriteSectionName(string name)
+		{
+			StringWriter sw = new();
+			using IniStreamWriter writer = new(sw, NewLineStyle.Lf, leaveOpen: true);
+			writer.WriteSection(name);
+			return sw.ToString();
+		}
+		[Fact]
+		public static void EscapedSectionName()
+		{
+			Assert.Equal("[\\[hey]\n", WriteSectionName("[hey"));
+			Assert.Equal("[\\]hey]\n", WriteSectionName("]hey"));
+			Assert.Equal("[\\;hey]\n", WriteSectionName(";hey"));
+			Assert.Equal("[\\#hey]\n", WriteSectionName("#hey"));
+			Assert.Equal("[he\\ny]\n", WriteSectionName("he\ny"));
+			Assert.Equal("[h\\rey]\n", WriteSectionName("h\rey"));
+		}
+		private static string WriteKeyValue(string key, string value)
+		{
+			StringWriter sw = new();
+			using IniStreamWriter writer = new(sw, NewLineStyle.Lf, leaveOpen: true);
+			writer.WriteKeyValue(key, value);
+			return sw.ToString();
 		}
 		[Fact]
 		public static void IllegalKey()
@@ -164,13 +182,16 @@
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(null!, "Value"));
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("", "Value"));
 			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(" ", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("\t", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("=hey", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(":hey", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue(";hey", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("#hey", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("he\ny", "Value"));
-			Assert.Throws<ArgumentException>(() => writer.WriteKeyValue("h\rey", "Value"));
+		}
+		[Fact]
+		public static void EscapedKeyName()
+		{
+			Assert.Equal("\\=hey=x\n", WriteKeyValue("=hey", "x"));
+			Assert.Equal("\\:hey=x\n", WriteKeyValue(":hey", "x"));
+			Assert.Equal("\\;hey=x\n", WriteKeyValue(";hey", "x"));
+			Assert.Equal("\\#hey=x\n", WriteKeyValue("#hey", "x"));
+			Assert.Equal("he\\ny=x\n", WriteKeyValue("he\ny", "x"));
+			Assert.Equal("h\\rey=x\n", WriteKeyValue("h\rey", "x"));
 		}
 	}
 }
