@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.IO;
+	using System.Text;
 	using System.Threading;
 	using System.Threading.Tasks;
 
@@ -24,6 +25,14 @@
 			this.escaper = escaper;
 		}
 		/// <summary>
+		/// Gets the written data in the buffer as a <see cref="ReadOnlySpan{T}"/>
+		/// </summary>
+		public ReadOnlySpan<char> Span => buffer.Span;
+		/// <summary>
+		/// Gets the written data in the buffer as a <see cref="ReadOnlyMemory{T}"/>
+		/// </summary>
+		public ReadOnlyMemory<char> Memory => buffer.Memory;
+		/// <summary>
 		/// Clears the buffer.
 		/// </summary>
 		public void Clear()
@@ -33,11 +42,20 @@
 		/// <summary>
 		/// Uses the provided <see cref="IIniTextEscaper"/> to escape <paramref name="text"/>, adding it to the buffer.
 		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="token"></param>
-		public void Escape(ReadOnlySpan<char> text, IniWriteToken token)
+		/// <param name="text">The text to escape.</param>
+		/// <param name="token">The type of content that this is.</param>
+		public IniError Escape(ReadOnlySpan<char> text, IniTokenContext token)
 		{
-			escaper.Escape(text, WriteValidText, WriteEscapeChar, token);
+			return escaper.Escape(text, WriteValidText, WriteEscapeChar, token);
+		}
+		/// <summary>
+		/// Uses the provided <see cref="IIniTextEscaper"/> to escape <paramref name="text"/>, adding it to the buffer.
+		/// </summary>
+		/// <param name="text">The text to unescape.</param>
+		/// <param name="token">The type of content that this is.</param>
+		public IniError Unescape(ReadOnlySpan<char> text, IniTokenContext token)
+		{
+			return escaper.Unescape(text, WriteValidText, WriteChar, token);
 		}
 		/// <summary>
 		/// Writes a chunk of valid text to the buffer.
@@ -45,9 +63,12 @@
 		/// <param name="text">The chunk of valid text.</param>
 		public void WriteValidText(ReadOnlySpan<char> text)
 		{
-			Span<char> span = buffer.GetSpan(text.Length);
-			text.CopyTo(span);
-			buffer.Advance(text.Length);
+			if (text.Length > 0)
+			{
+				Span<char> span = buffer.GetSpan(text.Length);
+				text.CopyTo(span);
+				buffer.Advance(text.Length);
+			}
 		}
 		/// <summary>
 		/// Writes a backslash followed by <paramref name="c"/> to the buffer.
@@ -59,6 +80,29 @@
 			span[0] = '\\';
 			span[1] = c;
 			buffer.Advance(2);
+		}
+		/// <summary>
+		/// Writes <paramref name="c"/> to the buffer.
+		/// </summary>
+		/// <param name="c">The character to write.</param>
+		public void WriteChar(char c)
+		{
+			Span<char> span = buffer.GetSpan(1);
+			span[0] = c;
+			buffer.Advance(1);
+		}
+		/// <summary>
+		/// Writes the stored text to <paramref name="sb"/>, and resets the position of the stored buffer.
+		/// </summary>
+		/// <param name="sb">The <see cref="StringBuilder"/> to write the data to.</param>
+		public void WriteTo(StringBuilder sb)
+		{
+#if NETSTANDARD2_0
+			sb.Append(buffer.buf, 0, buffer.Written);
+#else
+			sb.Append(buffer.Span);
+#endif
+			buffer.SetWritten(0);
 		}
 		/// <summary>
 		/// Writes the stored text to <paramref name="writer"/>, and resets the position of the stored buffer.
@@ -88,12 +132,17 @@
 			buffer.SetWritten(0);
 		}
 		/// <summary>
-		/// Creates a string from the text stored in 
+		/// Creates a string from the text stored in the buffer.
+		/// Does not reset the position of the stored buffer.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The text stored in the buffer.</returns>
 		public override string ToString()
 		{
-			return new string(buffer.buf);
+#if NETSTANDARD2_0
+			return new string(buffer.buf, 0, buffer.Written);
+#else
+			return new string(buffer.Span);
+#endif
 		}
 	}
 }

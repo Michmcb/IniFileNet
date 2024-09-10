@@ -15,6 +15,10 @@
 			bool allowKeyDelimiterColon = false,
 			bool allowLineContinuations = false,
 			bool ignoreComments = false,
+			bool ignoreSectionEscapes = false,
+			bool ignoreKeyEscapes = false,
+			bool ignoreValueEscapes = false,
+			bool ignoreCommentEscapes = false,
 			bool trimSections = false,
 			bool trimKeys = false,
 			bool trimValues = false
@@ -25,6 +29,10 @@
 			AllowKeyDelimiterColon = allowKeyDelimiterColon;
 			AllowLineContinuations = allowLineContinuations;
 			IgnoreComments = ignoreComments;
+			IgnoreSectionEscapes = ignoreSectionEscapes;
+			IgnoreKeyEscapes = ignoreKeyEscapes;
+			IgnoreValueEscapes = ignoreValueEscapes;
+			IgnoreCommentEscapes = ignoreCommentEscapes;
 			TrimSections = trimSections;
 			TrimKeys = trimKeys;
 			TrimValues = trimValues;
@@ -52,6 +60,22 @@
 		/// When reading, all comments are ignored.
 		/// </summary>
 		public bool IgnoreComments { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside sections are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreSectionEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside keys are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreKeyEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside values are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreValueEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside comments are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreCommentEscapes { get; }
 		/// <summary>
 		/// When reading, all section names will be trimmed.
 		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.

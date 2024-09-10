@@ -20,6 +20,11 @@
 		/// </summary>
 		Section,
 		/// <summary>
+		/// Part of a section name between [ and ], with at least one escape sequence.
+		/// Content is the section name.
+		/// </summary>
+		SectionEscaped,
+		/// <summary>
 		/// The closing ] of a section.
 		/// Content is ]
 		/// </summary>
@@ -34,6 +39,11 @@
 		/// Content is the portion of the key name that was read.
 		/// </summary>
 		Key,
+		/// <summary>
+		/// Part of a key name, with at least one escape sequence.
+		/// Content is the portion of the key name that was read.
+		/// </summary>
+		KeyEscaped,
 		/// <summary>
 		/// Encountered an = or :, signifying the end of a key.
 		/// Content is = or :.
@@ -50,6 +60,11 @@
 		/// </summary>
 		Value,
 		/// <summary>
+		/// Part of a value, with at least one escape sequence.
+		/// Content is the portion of the value that was read.
+		/// </summary>
+		ValueEscaped,
+		/// <summary>
 		/// The end of a value.
 		/// Content is the newline character encountered that marks the end of the value, or empty string if there was no newline.
 		/// </summary>
@@ -65,13 +80,18 @@
 		/// </summary>
 		Comment,
 		/// <summary>
+		/// Part of a comment, with at least one escape sequence.
+		/// Content is the portion of the comment that was read.
+		/// </summary>
+		CommentEscaped,
+		/// <summary>
 		/// The end of a comment.
 		/// Content is the newline character encountered that marks the end of the value, or empty string if there was no newline.
 		/// </summary>
 		EndComment,
 		/// <summary>
 		/// Encountered an error.
-		/// Content is a chunk of text around where the error happened.
+		/// Content is the current block of text in which the error happened.
 		/// </summary>
 		Error,
 	}

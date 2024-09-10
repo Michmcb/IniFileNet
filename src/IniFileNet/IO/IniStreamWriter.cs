@@ -72,7 +72,7 @@
 		{
 			if (name.IsEmpty) throw new ArgumentException("Illegal section name", nameof(name));
 			writer.Write('[');
-			Escaper.Escape(name, IniWriteToken.Section);
+			Escaper.Escape(name, IniTokenContext.Section).ThrowIfError();
 			Escaper.WriteTo(writer);
 			writer.Write(']');
 			writer.Write(NewLine);
@@ -99,7 +99,7 @@
 			while ((nl = comment.IndexOfAny(Syntax.NewLineCharsAsMemory.Span)) != -1)
 #endif
 			{
-				Escaper.Escape(comment.Slice(0, nl), IniWriteToken.Comment);
+				Escaper.Escape(comment.Slice(0, nl), IniTokenContext.Comment).ThrowIfError();
 				Escaper.WriteTo(writer);
 				// If we hit \r and the next character is \n, we skip 2
 				// Otherwise, just skip 1
@@ -118,7 +118,7 @@
 
 				comment = comment.Slice(nl);
 			}
-			Escaper.Escape(comment, IniWriteToken.Comment);
+			Escaper.Escape(comment, IniTokenContext.Comment).ThrowIfError();
 			Escaper.WriteTo(writer);
 			writer.Write(NewLine);
 		}
@@ -138,28 +138,11 @@
 		public void WriteKeyValue(ReadOnlySpan<char> key, ReadOnlySpan<char> value)
 		{
 			if (key.IsEmpty || key.IsWhiteSpace()) throw new ArgumentException("Illegal key name", nameof(key));
-			Escaper.Escape(key, IniWriteToken.Key);
+			Escaper.Escape(key, IniTokenContext.Key).ThrowIfError();
 			Escaper.WriteTo(writer);
 			writer.Write(KeyDelim);
-			Escaper.Escape(value, IniWriteToken.Value);
+			Escaper.Escape(value, IniTokenContext.Value).ThrowIfError();
 			Escaper.WriteTo(writer);
-			writer.Write(NewLine);
-		}
-		/// <summary>
-		/// Writes a backslash followed by <paramref name="c"/>.
-		/// </summary>
-		/// <param name="c">The character representing the escape sequence.</param>
-		public void WriteEscapeSequence(char c)
-		{
-			writer.Write('\\');
-			writer.Write(c);
-		}
-		/// <summary>
-		/// Writes a backslash followed by <see cref="NewLine"/> to <see cref="writer"/>.
-		/// </summary>
-		public void WriteLineContinuation()
-		{
-			writer.Write('\\');
 			writer.Write(NewLine);
 		}
 		/// <summary>

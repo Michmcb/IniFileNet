@@ -30,14 +30,14 @@
 			{
 				{
 					IniDictionaryReader<string> readerSync = new();
-					IniError actualError = readerSync.Load(new(new StringReader(ini), opt), func);
+					IniError actualError = readerSync.Load(new(new StringReader(ini), null, opt), func);
 					Assert.Equal(expectedError.Code, actualError.Code);
 					Assert.Equal(expectedError.Msg, actualError.Msg);
 					Assert.Collection(readerSync.Dictionary, elementInspectors);
 				}
 				{
 					IniDictionaryReader<string> readerAsync = new();
-					IniError actualError = await readerAsync.LoadAsync(new(new StringReader(ini), opt), func);
+					IniError actualError = await readerAsync.LoadAsync(new(new StringReader(ini), null, opt), func);
 					Assert.Equal(expectedError.Code, actualError.Code);
 					Assert.Equal(expectedError.Msg, actualError.Msg);
 					Assert.Collection(readerAsync.Dictionary, elementInspectors);

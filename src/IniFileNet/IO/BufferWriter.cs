@@ -39,7 +39,9 @@
 		/// Gets the written data in the buffer as a <see cref="ReadOnlySpan{T}"/>
 		/// </summary>
 		public ReadOnlySpan<T> Span => buf.AsSpan(0, index);
+		/// <summary>
 		/// Gets the written data in the buffer as a <see cref="ReadOnlyMemory{T}"/>
+		/// </summary>
 		public ReadOnlyMemory<T> Memory => buf.AsMemory(0, index);
 		/// <summary>
 		/// Resets the index of the buffer to 0 and clears all data.
@@ -95,6 +97,7 @@
 		/// </summary>
 		/// <param name="minLength">The minimum length required.</param>
 		/// <returns>A writeable <see cref="Span{T}"/>.</returns>
+		/// <exception cref="OutOfMemoryException">If the buffer to be allocated exceeds the Array maximum length.</exception>
 		public Span<T> GetSpan(int minLength = 0)
 		{
 			EnsureCapacity(minLength);
@@ -108,6 +111,7 @@
 		/// </summary>
 		/// <param name="minLength">The minimum length required.</param>
 		/// <returns>A writeable <see cref="Memory{T}"/>.</returns>
+		/// <exception cref="OutOfMemoryException">If the buffer to be allocated exceeds the Array maximum length.</exception>
 		public Memory<T> GetMemory(int minLength = 0)
 		{
 			EnsureCapacity(minLength);

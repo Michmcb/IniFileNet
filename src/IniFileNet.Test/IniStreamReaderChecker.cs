@@ -10,8 +10,8 @@
 		private readonly IniStreamReader readerAsync;
 		public IniStreamReaderChecker(string ini, IniReaderOptions options = default)
 		{
-			reader = new(new StringReader(ini), options);
-			readerAsync = new(new StringReader(ini), options);
+			reader = new(new StringReader(ini), null, options);
+			readerAsync = new(new StringReader(ini), null, options);
 		}
 		public async Task Next(IniToken token, string content)
 		{

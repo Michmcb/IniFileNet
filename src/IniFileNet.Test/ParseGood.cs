@@ -36,7 +36,7 @@ namespace IniFileNet.Test
 			await Chk.CheckAllIniDictionaryReader(KeyEqualsValueIni, KeyEqualsValueOpt, default, [x => Assert.Equal(new("Key", "Value"), x)]);
 			//await Chk.CheckAllIniDictionaryReader(KeyEqualsValueIni, KeyEqualsValueOpt, default, [x => Chk.IniValueKvp("Key", "Value", [], x)]);
 		}
-		private const string SectionKeyEqualsValueIni = ";Comment1\n[Section]\n;Comment2\nKey=Value";
+		private const string SectionKeyEqualsValueIni = ";Comment1\n[Section]\n;Comment2\n]Key=Value";
 		[Fact]
 		public static void SectionKeyEqualsValueSpan()
 		{
@@ -51,7 +51,7 @@ namespace IniFileNet.Test
 			c.Next(IniContentType.Comment, "Comment2");
 			c.Next(IniContentType.EndComment, "\n");
 			c.Next(IniContentType.StartKey, default);
-			c.Next(IniContentType.Key, "Key");
+			c.Next(IniContentType.Key, "]Key");
 			c.Next(IniContentType.EndKey, "=");
 			c.Next(IniContentType.StartValue, default);
 			c.Next(IniContentType.Value, "Value");
@@ -65,14 +65,14 @@ namespace IniFileNet.Test
 			await c1.Next(IniToken.Comment, "Comment1");
 			await c1.Next(IniToken.Section, "Section");
 			await c1.Next(IniToken.Comment, "Comment2");
-			await c1.Next(IniToken.Key, "Key");
+			await c1.Next(IniToken.Key, "]Key");
 			await c1.Next(IniToken.Value, "Value");
 			await c1.Next(IniToken.End, "");
 
-			await c2.Next(new("Section", [new("Key", "Value", ["Comment2"])], ["Comment1"]));
+			await c2.Next(new("Section", [new("]Key", "Value", ["Comment2"])], ["Comment1"]));
 			await c2.End();
 
-			await Chk.CheckAllIniDictionaryReader(SectionKeyEqualsValueIni, default, default, [x => Assert.Equal(new("Section.Key", "Value"), x)]);
+			await Chk.CheckAllIniDictionaryReader(SectionKeyEqualsValueIni, default, default, [x => Assert.Equal(new("Section.]Key", "Value"), x)]);
 			//await Chk.CheckAllIniDictionaryReader(SectionKeyEqualsValueIni, default, default, [x => Chk.IniValueKvp("Section.Key", "Value", ["Comment2"], x)]);
 		}
 		private const string DoubleKeyEqualsValueIni = "[Section]\nKey=Value1\nKey=Value2";
@@ -114,14 +114,14 @@ namespace IniFileNet.Test
 			await c2.End();
 
 			IniDictionaryReader<string> last = new(StringComparer.OrdinalIgnoreCase);
-			last.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), DoubleKeyEqualsValueOpt), IniDictionaryReader.StringOnlyLast).ThrowIfError();
+			last.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), null, DoubleKeyEqualsValueOpt), IniDictionaryReader.StringOnlyLast).ThrowIfError();
 			Assert.Collection(last.Dictionary, [x => Assert.Equal(new("Section.Key", "Value2"), x)]);
 			IniDictionaryReader<string> first = new(StringComparer.OrdinalIgnoreCase);
-			first.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), DoubleKeyEqualsValueOpt), IniDictionaryReader.StringOnlyFirst).ThrowIfError();
+			first.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), null, DoubleKeyEqualsValueOpt), IniDictionaryReader.StringOnlyFirst).ThrowIfError();
 			Assert.Collection(first.Dictionary, [x => Assert.Equal(new("Section.Key", "Value1"), x)]);
 
 			IniDictionaryReader<string> single = new(StringComparer.OrdinalIgnoreCase);
-			Chk.IniError(IniErrorCode.ValueAlreadyPresent, "Section & key already present. Full Key: \"Section.Key\". Value is: \"Value2\"", single.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), DoubleKeyEqualsValueOpt), IniDictionaryReader.StringSingle));
+			Chk.IniError(IniErrorCode.ValueAlreadyPresent, "Section & key already present. Full Key: \"Section.Key\". Value is: \"Value2\"", single.Load(new IniStreamReader(new StringReader(DoubleKeyEqualsValueIni), null, DoubleKeyEqualsValueOpt), IniDictionaryReader.StringSingle));
 			// Even though we got an error the dictionary should still be partially filled
 			Assert.Collection(single.Dictionary, [x => Assert.Equal(new("Section.Key", "Value1"), x)]);
 		}
@@ -488,6 +488,88 @@ namespace IniFileNet.Test
 			//[
 			//	x => Chk.IniValueKvp("Section.Key", "Value", [" Hello world!"], x),
 			//]);
+		}
+		public const string EscapeSequencesEndOfBlockIni = "Key\\==";
+		public static readonly IniReaderOptions EscapeSequencesEndOfBlockOpt = new(allowGlobalKeys: true);
+		[Fact]
+		public static void EscapeSequencesEndOfBlockSpan()
+		{
+			IniSpanReaderChecker c = new(EscapeSequencesEndOfBlockIni, EscapeSequencesEndOfBlockOpt);
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.KeyEscaped, "Key\\=");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.Value, "");
+			c.Next(IniContentType.EndValue, default);
+			c.Next(IniContentType.End, default);
+		}
+		[Fact]
+		public static async Task EscapeSequencesEndOfBlockStream()
+		{
+			var (c1, c2) = Checks.For(EscapeSequencesEndOfBlockIni, EscapeSequencesEndOfBlockOpt);
+			await c1.Next(IniToken.Key, "Key=");
+			await c1.Next(IniToken.Value, "");
+			await c1.Next(IniToken.End, "");
+		}
+
+		public const string EscapeSequencesIni = "[B\\\\ig \\0Lon\\bg \\rSe\\nction Name]\nBig Long\\= Key Name=Big Lo\\]ng Value\n;Comment\\a Stuff\n";
+		[Fact]
+		public static void EscapeSequencesSpan()
+		{
+			IniSpanReaderChecker c = new(EscapeSequencesIni, default);
+			c.Next(IniContentType.StartSection, "[");
+			c.Next(IniContentType.SectionEscaped, "B\\\\ig \\0Lon\\bg \\rSe\\nction Name");
+			c.Next(IniContentType.EndSection, "]");
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.KeyEscaped, "Big Long\\= Key Name");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.ValueEscaped, "Big Lo\\]ng Value");
+			c.Next(IniContentType.EndValue, "\n");
+			c.Next(IniContentType.StartComment, ";");
+			c.Next(IniContentType.CommentEscaped, "Comment\\a Stuff");
+			c.Next(IniContentType.EndComment, "\n");
+			c.Next(IniContentType.End, default);
+		}
+		[Fact]
+		public static async Task EscapeSequencesStream()
+		{
+			var (c1, c2) = Checks.For(EscapeSequencesIni, default);
+			await c1.Next(IniToken.Section, "B\\ig \0Lon\bg \rSe\nction Name");
+			await c1.Next(IniToken.Key, "Big Long= Key Name");
+			await c1.Next(IniToken.Value, "Big Lo]ng Value");
+			await c1.Next(IniToken.Comment, "Comment\a Stuff");
+			await c1.Next(IniToken.End, "");
+		}
+		public const string SemicolonInKeyNameIni = "[Section]\nKe;y=Value";
+		[Fact]
+		public static void SemicolonInKeyNameSpan()
+		{
+			IniSpanReaderChecker c = new(SemicolonInKeyNameIni);
+			c.Next(IniContentType.StartSection, "[");
+			c.Next(IniContentType.Section, "Section");
+			c.Next(IniContentType.EndSection, "]");
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.Key, "Ke;y");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.Value, "Value");
+			c.Next(IniContentType.EndValue, default);
+			c.Next(IniContentType.End, default);
+		}
+		[Fact]
+		public static async Task SemicolonInKeyNameStream()
+		{
+			var (c1, c2) = Checks.For(SemicolonInKeyNameIni, default);
+			await c1.Next(IniToken.Section, "Section");
+			await c1.Next(IniToken.Key, "Ke;y");
+			await c1.Next(IniToken.Value, "Value");
+			await c1.Next(IniToken.End, "");
+
+			await Chk.CheckAllIniDictionaryReader(SemicolonInKeyNameIni, default, default,
+			[
+				x => Assert.Equal(new("Section.Ke;y", "Value"), x),
+			]);
 		}
 		public const string CommentKeyValueIni = "# Hello world!\nKey=Value";
 		public static readonly IniReaderOptions CommentKeyValueOpt = new(allowCommentsNumberSign: true, allowGlobalKeys: true);

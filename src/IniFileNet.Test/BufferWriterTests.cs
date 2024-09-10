@@ -7,6 +7,13 @@
 	public static class BufferWriterTests
 	{
 		[Fact]
+		public static void NoSizeHint()
+		{
+			BufferWriter<byte> writer = new(1024);
+			var s = writer.GetSpan();
+			Assert.Equal(1024, s.Length);
+		}
+		[Fact]
 		public static void GeneralBehaviour()
 		{
 			BufferWriter<byte> writer = new(1024);

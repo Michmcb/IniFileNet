@@ -1,10 +1,10 @@
 ﻿namespace IniFileNet.Test
 {
-	using IniFileNet.IO;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
 	using Xunit;
+	using IniFileNet.IO;
 	public static class EmptyListTests
 	{
 		[Fact]

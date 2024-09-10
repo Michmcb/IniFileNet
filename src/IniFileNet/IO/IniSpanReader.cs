@@ -2,26 +2,29 @@
 namespace IniFileNet.IO
 {
 	using System;
+#if NET8_0_OR_GREATER
 	using System.Buffers;
-	using System.Diagnostics;
-	using System.Numerics;
-	using System.Runtime.CompilerServices;
-
+#endif
 	/// <summary>
 	/// A low level stack-allocated ini reader that parses blocks of text.
 	/// Typically, you would use <see cref="IniStreamReader"/> unless you want finer control over parsing.
 	/// </summary>
 	public ref struct IniSpanReader
 	{
+#if NET8_0_OR_GREATER
+		private static readonly SearchValues<char> Backslash = SearchValues.Create(new char[] { '\\' });
+		private static readonly SearchValues<char> EqColon = SearchValues.Create(new char[] { '=', ':' });
+		private static readonly SearchValues<char> Eq = SearchValues.Create(new char[] { '=' });
+		private readonly SearchValues<char> keyEnd;
+		private static readonly SearchValues<char> sectionEnd = SearchValues.Create(new char[] { ']' });
+#else
+		private const char Backslash = '\\';
+		private readonly ReadOnlySpan<char> sectionEnd = [']'];
+		private readonly ReadOnlySpan<char> keyEnd;
+#endif
 		private IniSpanReaderBlockState _state;
 		private IniErrorCode _error;
 		private int _position;
-#if NET8_0_OR_GREATER
-		private readonly System.Buffers.SearchValues<char>
-#else
-		private readonly ReadOnlySpan<char>
-#endif
-			keyEndChars;
 		/// <summary>
 		/// Creates a new instance with the current <paramref name="state"/>.
 		/// </summary>
@@ -31,9 +34,9 @@ namespace IniFileNet.IO
 		public IniSpanReader(ReadOnlySpan<char> block, IniSpanReaderState state, bool isFinalBlock)
 		{
 #if NET8_0_OR_GREATER
-			keyEndChars = state.Options.AllowKeyDelimiterColon ? Syntax.EqColonSemicolon : Syntax.EqSemicolon;
+			keyEnd = state.Options.AllowKeyDelimiterColon ? EqColon : Eq;
 #else
-			keyEndChars = state.Options.AllowKeyDelimiterColon ? Syntax.EqColonSemicolonAsMemory.Span : Syntax.EqSemicolonAsMemory.Span;
+			keyEnd = state.Options.AllowKeyDelimiterColon ? ['=', ':'] : ['='];
 #endif
 			Block = block;
 			_state = state.State;
@@ -81,12 +84,6 @@ namespace IniFileNet.IO
 		// Instead of calling this function recursively, we just goto the beginning. The reason is because if we have lots and lots
 		// of contiguous comments, then eventually we'll cause a StackOverflowException.
 		start:
-			// Done: Keys cannot be empty
-			// Done: Keys cannot contain ;
-			// TODO: Leading/Trailing whitespace around keys and values has to be ignored (reader options for both)
-			// Done: Sections must appear on their own line
-			// Done: Case insensitivity (This is implemented by string comparers and client code)
-			// Done: Allow/disallow global keys (keys with no preceding section)
 			char c;
 			// When we're in the global state, we want to disallow reading keys.
 			// We take advantage of the fact that the Comment and CommentEnded states are a single bit to the CommentGlobal and CommentEndedGlobal states
@@ -144,7 +141,7 @@ namespace IniFileNet.IO
 						case '=':
 							_state = IniSpanReaderBlockState.Error;
 							_error = IniErrorCode.EmptyKeyName;
-							return new(IniContentType.Error, Block.Slice(_position));
+							return new(IniContentType.Error, Block);
 						default:
 							{
 								if (globalFlag == 0)
@@ -156,7 +153,7 @@ namespace IniFileNet.IO
 								{
 									_state = IniSpanReaderBlockState.Error;
 									_error = IniErrorCode.GlobalKeyNotAllowed;
-									return new(IniContentType.Error, Block.Slice(_position));
+									return new(IniContentType.Error, Block);
 								}
 							}
 					}
@@ -164,41 +161,33 @@ namespace IniFileNet.IO
 					{
 						int start = _position;
 
-						_position = AdvanceToAny(Block, _position, keyEndChars);
+						IdxEsc adv = Options.IgnoreKeyEscapes ? AdvanceToAny(Block, _position, keyEnd) : AdvanceToAnyEscapes(Block, _position, keyEnd, Backslash);
+						_position = adv.Index;
 						if (_position >= Block.Length)
 						{
+							_position = start;
 							if (IsFinalBlock)
 							{
-								_position = start;
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.KeyDelimiterNotFound;
-								return new(IniContentType.Error, Block.Slice(start));
+								return new(IniContentType.Error, Block);
 							}
 							else
 							{
-								_position = start;
 								return new IniContent(IniContentType.End, default);
 							}
 						}
 						else
 						{
-							c = Block[_position];
-							if (c == ';')
-							{
-								_position = start;
-								_state = IniSpanReaderBlockState.Error;
-								_error = IniErrorCode.SemicolonInKeyName;
-								return new(IniContentType.Error, Block.Slice(start));
-							}
 							_state = IniSpanReaderBlockState.KeyEnded;
-							return new IniContent(IniContentType.Key, Block.Slice(start, _position - start));
+							return new IniContent(adv.Escape ? IniContentType.KeyEscaped : IniContentType.Key, Block.Slice(start, _position - start));
 						}
 					}
 				case IniSpanReaderBlockState.KeyEnded:
 					{
 						// Increment the position beyond the = sign
 						_state = IniSpanReaderBlockState.PreValue;
-						return GetCharContentAndAdvancePosition(IniContentType.EndKey);
+						return GetCharContentAndTryAdvancePosition(IniContentType.EndKey);
 					}
 				case IniSpanReaderBlockState.PreValue:
 					{
@@ -207,6 +196,7 @@ namespace IniFileNet.IO
 					}
 				case IniSpanReaderBlockState.Value:
 					{
+						// TODO Maybe we want to process line continuations in the escaper?
 						int start = _position;
 						if (_position >= Block.Length)
 						{
@@ -221,6 +211,7 @@ namespace IniFileNet.IO
 							}
 						}
 						AdvanceToNewLine();
+						ReadOnlySpan<char> valueContent;
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -228,10 +219,10 @@ namespace IniFileNet.IO
 								// If the very last character of a stream happens to be a backslash and we're allowing line continuations then we have to just pretend that
 								// it doesn't exist
 								_state = IniSpanReaderBlockState.ValueEnded;
-								var content = (Block[Block.Length - 1] == '\\' && Options.AllowLineContinuations)
+								valueContent = (Block[Block.Length - 1] == '\\' && Options.AllowLineContinuations)
 									? Block.Slice(start, (Block.Length - 1) - start)
 									: Block.Slice(start);
-								return new(IniContentType.Value, content);
+								//return new(IniContentType.Value, content);
 							}
 							else
 							{
@@ -244,13 +235,20 @@ namespace IniFileNet.IO
 									// Additionally, if the content is empty, then that means we've consumed everything up to the backslash
 									// So we say that we hit the end to avoid getting stuck in an infinite loop of empty value content
 									var content = Block.Slice(start, (Block.Length - 1) - start);
-									return content.Length == 0
-										? new(IniContentType.End, default)
-										: new(IniContentType.Value, content);
+									if (content.Length == 0)
+									{
+										return new(IniContentType.End, default);
+									}
+									else
+									{
+										valueContent = content;
+										//return new(IniContentType.Value, content);
+									}
 								}
 								else
 								{
-									return new(IniContentType.Value, Block.Slice(start));
+									valueContent = Block.Slice(start);
+									//return new(IniContentType.Value, Block.Slice(start));
 								}
 							}
 						}
@@ -260,14 +258,25 @@ namespace IniFileNet.IO
 							{
 								int end = _position - 1;
 								++_position;
-								return new(IniContentType.Value, Block.Slice(start, end - start));
+								valueContent = Block.Slice(start, end - start);
+								//return new(IniContentType.Value, Block.Slice(start, end - start));
 							}
 							else
 							{
 								_state = IniSpanReaderBlockState.ValueEnded;
-								return new(IniContentType.Value, Block.Slice(start, _position - start));
+								valueContent = Block.Slice(start, _position - start);
+								//return new(IniContentType.Value, Block.Slice(start, _position - start));
 							}
 						}
+						IniContentType valueType = !Options.IgnoreValueEscapes
+#if NET8_0_OR_GREATER
+							&& valueContent.IndexOfAny(Backslash) != -1
+#else
+							&& valueContent.IndexOf(Backslash) != -1
+#endif
+							? IniContentType.ValueEscaped
+							: IniContentType.Value;
+						return new(valueType, valueContent);
 					}
 				case IniSpanReaderBlockState.ValueEnded:
 					{
@@ -293,6 +302,7 @@ namespace IniFileNet.IO
 							}
 						}
 						AdvanceToNewLine();
+						ReadOnlySpan<char> commentContent;
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -305,7 +315,7 @@ namespace IniFileNet.IO
 							}
 							else
 							{
-								return new(IniContentType.Comment, Block.Slice(start));
+								commentContent = Block.Slice(start);
 							}
 						}
 						else
@@ -317,9 +327,18 @@ namespace IniFileNet.IO
 							}
 							else
 							{
-								return new(IniContentType.Comment, Block.Slice(start, _position - start));
+								commentContent = Block.Slice(start, _position - start);
 							}
 						}
+						IniContentType commentType = !Options.IgnoreCommentEscapes
+#if NET8_0_OR_GREATER
+							&& commentContent.IndexOfAny(Backslash) != -1
+#else
+							&& commentContent.IndexOf(Backslash) != -1
+#endif
+							? IniContentType.CommentEscaped
+							: IniContentType.Comment;
+						return new(commentType, commentContent);
 					}
 				case IniSpanReaderBlockState.CommentEndedGlobal:
 					{
@@ -354,14 +373,15 @@ namespace IniFileNet.IO
 							{
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.SectionCloseBracketNotFound;
-								return new(IniContentType.Error, Block.Slice(start));
+								return new(IniContentType.Error, Block);
 							}
 							else
 							{
 								return new(IniContentType.End, default);
 							}
 						}
-						AdvanceTo(']');
+						IdxEsc adv = Options.IgnoreSectionEscapes ? AdvanceToAny(Block, _position, sectionEnd) : AdvanceToAnyEscapes(Block, _position, sectionEnd, Backslash);
+						_position = adv.Index;
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -369,20 +389,24 @@ namespace IniFileNet.IO
 								_position = start;
 								_state = IniSpanReaderBlockState.Error;
 								_error = IniErrorCode.SectionCloseBracketNotFound;
-								return new(IniContentType.Error, Block.Slice(start));
+								return new(IniContentType.Error, Block);
 							}
-							return new(IniContentType.Section, Block.Slice(start));
+							// If we have some content then we can return that, otherwise just return End
+							else if (_position - start <= 0)
+							{
+								return new(IniContentType.End, default);
+							}
 						}
-						else
+						else if (Block[_position] == ']')
 						{
 							_state = IniSpanReaderBlockState.SectionEnded;
-							return new(IniContentType.Section, Block.Slice(start, _position - start));
 						}
+						return new(adv.Escape ? IniContentType.SectionEscaped : IniContentType.Section, Block.Slice(start, _position - start));
 					}
 				case IniSpanReaderBlockState.SectionEnded:
 					{
 						_state = IniSpanReaderBlockState.SectionEndedVerifyOnlyThingOnLine;
-						return GetCharContentAndAdvancePosition(IniContentType.EndSection);
+						return GetCharContentAndTryAdvancePosition(IniContentType.EndSection);
 					}
 				case IniSpanReaderBlockState.SectionEndedVerifyOnlyThingOnLine:
 					{
@@ -393,7 +417,7 @@ namespace IniFileNet.IO
 							_position = start;
 							_state = IniSpanReaderBlockState.Error;
 							_error = IniErrorCode.SectionIsNotOnlyThingOnLine;
-							return new(IniContentType.Error, Block.Slice(start));
+							return new(IniContentType.Error, Block);
 						}
 						if (_position >= Block.Length)
 						{
@@ -407,10 +431,10 @@ namespace IniFileNet.IO
 					}
 				default:
 				case IniSpanReaderBlockState.Error:
-					return new(IniContentType.Error, _position < Block.Length ? Block.Slice(_position) : default);
+					return new(IniContentType.Error, Block);
 			}
 		}
-		private IniContent GetCharContentAndAdvancePosition(IniContentType tok)
+		private IniContent GetCharContentAndTryAdvancePosition(IniContentType tok)
 		{
 			ReadOnlySpan<char> content = _position < Block.Length ? Block.Slice(_position, 1) : default;
 			++_position;
@@ -433,13 +457,14 @@ namespace IniFileNet.IO
 #if !NET7_0_OR_GREATER
 		private static int IndexOfAnyExcept(ReadOnlySpan<char> block, ReadOnlySpan<char> chars)
 		{
-			return chars.Length switch
+			switch (chars.Length)
 			{
-				4 => IndexOfAnyExcept(block, chars[0], chars[1], chars[2], chars[3]),
+				case 4: return IndexOfAnyExcept(block, chars[0], chars[1], chars[2], chars[3]);
 				// As of right now, we are only EVER using this with Syntax.WhitespaceChars. So we just throw if it's anything other than 4
 				// If we ever use other lengths, we'll implement them. Anything above 5 will use the loop below. It's fully implemented, just not tested.
-				_ => throw new NotImplementedException(),
-			};
+				default:
+					throw new NotImplementedException();
+			}
 			//for (int i = 0; i < block.Length; ++i)
 			//{
 			//	// If at least one of the characters match, then keep going.
@@ -464,23 +489,56 @@ namespace IniFileNet.IO
 			return -1;
 		}
 #endif
-		private void AdvanceTo(char c)
-		{
-			int i = Block.Slice(_position).IndexOf(c);
-			_position = i == -1
-				? Block.Length
-				: i + _position;
-		}
 #if NET8_0_OR_GREATER
-		private static int AdvanceToAny(ReadOnlySpan<char> block, int position, System.Buffers.SearchValues<char> c)
+		private static IdxEsc AdvanceToAny(ReadOnlySpan<char> block, int position, System.Buffers.SearchValues<char> chars)
 #else
-		private static int AdvanceToAny(ReadOnlySpan<char> block, int position, ReadOnlySpan<char> c)
+		private static IdxEsc AdvanceToAny(ReadOnlySpan<char> block, int position, ReadOnlySpan<char> chars)
 #endif
 		{
-			int i = block.Slice(position).IndexOfAny(c);
+			int i = block.Slice(position).IndexOfAny(chars);
 			return i == -1
-				? block.Length
-				: i + position;
+				? new(block.Length, false)
+				: new(i + position, false);
+		}
+#if NET8_0_OR_GREATER
+		private static IdxEsc AdvanceToAnyEscapes(ReadOnlySpan<char> block, int position, SearchValues<char> chars, SearchValues<char> backslash)
+#else
+		private static IdxEsc AdvanceToAnyEscapes(ReadOnlySpan<char> block, int position, ReadOnlySpan<char> chars, char backslash)
+#endif
+		{
+			bool esc = false;
+			int off = position;
+			ReadOnlySpan<char> str = block.Slice(off);
+			while (true)
+			{
+				int i = str.IndexOfAny(chars);
+				if (i == -1)
+				{
+					return new(block.Length, esc);
+				}
+				else if (i > 0 && str[i - 1] == '\\')
+				{
+					// Escape sequence, so we need to search again, starting from 1 character ahead, if there's more to follow
+					// If there's nothing further, that counts as NOT finding anything
+					esc = true;
+					if (i + 1 > str.Length) return new(block.Length, esc);
+					str = str.Slice(i + 1);
+					off += i + 1;
+				}
+				else
+				{
+					if (!esc)
+					{
+						esc = block.Slice(position, i)
+#if NET8_0_OR_GREATER
+							.ContainsAny(backslash);
+#else
+							.IndexOf(backslash) != -1;
+#endif
+					}
+					return new(i + off, esc);
+				}
+			}
 		}
 		private void AdvanceToNewLine()
 		{
@@ -493,7 +551,6 @@ namespace IniFileNet.IO
 				? Block.Length
 				: i + _position;
 		}
-
 	}
 }
 #pragma warning restore IDE0057 // Use range operator

@@ -1,7 +1,9 @@
 ﻿namespace IniFileNet.Test
 {
+	using IniFileNet.IO;
+	using System.IO;
+	using System.Threading.Tasks;
 	using Xunit;
-
 	public static class IniValueTests
 	{
 		[Fact]

@@ -5,6 +5,7 @@
 	using System.IO;
 	using System.Text;
 	using System.Threading.Tasks;
+
 	/// <summary>
 	/// Reads an ini text stream.
 	/// </summary>
@@ -26,9 +27,10 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniStreamReader(TextReader reader, IniReaderOptions options = default, int bufferSize = DefaultBufferSize, bool leaveOpen = false)
+		public IniStreamReader(TextReader reader, IniTextEscaperBuffer? escaper = null, IniReaderOptions options = default, int bufferSize = DefaultBufferSize, bool leaveOpen = false)
 		{
 			Reader = reader;
+			Escaper = escaper ?? new IniTextEscaperBuffer(new(), DefaultIniTextEscaper.Default);
 			BufferSize = bufferSize;
 			LeaveOpen = leaveOpen;
 			buf = new char[bufferSize];
@@ -39,6 +41,10 @@
 		/// The underlying <see cref="TextReader"/> being used.
 		/// </summary>
 		public TextReader Reader { get; }
+		/// <summary>
+		/// The escaper to use to unescape text read.
+		/// </summary>
+		public IniTextEscaperBuffer Escaper { get; }
 		/// <summary>
 		/// The size of the buffer to use.
 		/// </summary>
@@ -83,6 +89,7 @@
 				}
 				else
 				{
+					int pos = state.Position;
 #if NETSTANDARD2_0
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = Reader.Read(buf, copied, buf.Length - copied);
@@ -90,7 +97,7 @@
 					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
 					int charsRead = Reader.Read(buf.Span.Slice(copied));
 #endif
-					totalPosition += copied;
+					totalPosition += pos;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -116,6 +123,7 @@
 				}
 				else
 				{
+					int pos = state.Position;
 #if NETSTANDARD2_0
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = await Reader.ReadAsync(buf, copied, buf.Length - copied);
@@ -123,7 +131,7 @@
 					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
 					int charsRead = await Reader.ReadAsync(buf.Slice(copied));
 #endif
-					totalPosition += copied;
+					totalPosition += pos;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -141,6 +149,7 @@
 			IniToken token = IniToken.End;
 			while (token == IniToken.End)
 			{
+				int p = sr.Position;
 				IniContent ic = sr.Read();
 				switch (ic.Type)
 				{
@@ -167,6 +176,74 @@
 						contentBuilder.Append(ic.Content);
 #endif
 						break;
+					case IniContentType.KeyEscaped:
+						{
+							IniError error = Escaper.Unescape(ic.Content, IniTokenContext.Key);
+							if (error.Code != IniErrorCode.None)
+							{
+								Error = error;
+								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+#if NETSTANDARD2_0
+									ic.Content.ToString())));
+#else
+									ic.Content)));
+#endif
+							}
+							Escaper.WriteTo(contentBuilder);
+						}
+						break;
+					case IniContentType.ValueEscaped:
+						{
+							IniError error = Escaper.Unescape(ic.Content, IniTokenContext.Value);
+							if (error.Code != IniErrorCode.None)
+							{
+								Error = error;
+								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+#if NETSTANDARD2_0
+									ic.Content.ToString())));
+#else
+									ic.Content)));
+#endif
+							}
+							Escaper.WriteTo(contentBuilder);
+						}
+						break;
+					case IniContentType.SectionEscaped:
+						{
+							IniError error = Escaper.Unescape(ic.Content, IniTokenContext.Section);
+							if (error.Code != IniErrorCode.None)
+							{
+								Error = error;
+								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+#if NETSTANDARD2_0
+									ic.Content.ToString())));
+#else
+									ic.Content)));
+#endif
+							}
+							Escaper.WriteTo(contentBuilder);
+						}
+						break;
+					case IniContentType.CommentEscaped:
+						{
+							IniError error = Escaper.Unescape(ic.Content, IniTokenContext.Comment);
+							if (error.Code != IniErrorCode.None)
+							{
+								Error = error;
+								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+#if NETSTANDARD2_0
+									ic.Content.ToString())));
+#else
+									ic.Content)));
+#endif
+							}
+							Escaper.WriteTo(contentBuilder);
+						}
+						break;
 
 					case IniContentType.EndKey:
 						token = IniToken.Key;
@@ -185,17 +262,17 @@
 					case IniContentType.Error:
 						state = sr.GetState();
 						string s = ic.Content.ToString();
-						Error = new(sr.ErrorCode, string.Concat("Error at character ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream. This is the data where the error was encountered: ", s));
+						Error = new(sr.ErrorCode, string.Concat("Error at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+							p.ToString(CultureInfo.InvariantCulture) ," in block. This is the block in which the error was encountered:", s));
 						return new ReadResult(IniToken.Error, s);
 				}
 			}
 			state = sr.GetState();
-			// TODO optimize this; we can just have a trim method for the content builder. Considering how often we'll have a single append followed by ToString(), we should benchmark this performance compared to a list of strings or something.
 			string content = token switch
 			{
-				IniToken.Section => Options.TrimSections ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
-				IniToken.Key => Options.TrimKeys ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
-				IniToken.Value => Options.TrimValues ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
+				IniToken.Section => Options.TrimSections ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
+				IniToken.Key => Options.TrimKeys ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
+				IniToken.Value => Options.TrimValues ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
 				_ => contentBuilder.ToString(),
 			};
 			return new ReadResult(token, content);

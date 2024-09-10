@@ -11,8 +11,8 @@
 		private readonly IniStreamSectionReader readerAsync;
 		public IniStreamSectionReaderChecker(string ini, IniReaderOptions options = default)
 		{
-			readerSync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), options));
-			readerAsync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), options));
+			readerSync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), null, options));
+			readerAsync = new IniStreamSectionReader(new IniStreamReader(new StringReader(ini), null, options));
 		}
 		public async Task Next(ReadOnlyIniSection expected)
 		{

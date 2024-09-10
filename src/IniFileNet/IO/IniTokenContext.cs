@@ -1,9 +1,9 @@
 ﻿namespace IniFileNet.IO
 {
 	/// <summary>
-	/// The type of ini token to write
+	/// The type of ini token is currently being read or written.
 	/// </summary>
-	public enum IniWriteToken
+	public enum IniTokenContext
 	{
 		/// <summary>
 		/// A section.
