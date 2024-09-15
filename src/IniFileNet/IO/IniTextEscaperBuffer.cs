@@ -119,7 +119,6 @@
 		/// <param name="writer">The <see cref="TextWriter"/> to write the data to.</param>
 		/// <param name="ct">The token to monitor for cancellation requests. Note that <see cref="TextWriter"/> in .netstandard2.0 does not
 		/// support accepting <see cref="CancellationToken"/>, so cancellation may be unreliable in this case.</param>
-		/// <returns></returns>
 		public async Task WriteToAsync(TextWriter writer, CancellationToken ct = default)
 		{
 #if NETSTANDARD2_0

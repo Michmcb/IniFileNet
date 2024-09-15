@@ -124,7 +124,7 @@
 				textCallback(str.Slice(0, idx));
 				if (idx + 1 >= str.Length) return new IniError(IniErrorCode.InvalidEscapeSequence, string.Concat("Invalid escape sequence at index ", idx.ToString(), " of text:",
 #if NETSTANDARD2_0
-						str.ToString()));
+						text.ToString()));
 #else
 						text));
 #endif
@@ -153,7 +153,7 @@
 					default:
 						return new IniError(IniErrorCode.InvalidEscapeSequence, string.Concat("Invalid escape sequence at index ", idx.ToString(), " of text:",
 #if NETSTANDARD2_0
-						str.ToString()));
+						text.ToString()));
 #else
 						text));
 #endif

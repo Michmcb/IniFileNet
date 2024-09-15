@@ -5,6 +5,7 @@
 	using System.IO;
 	using System.Threading.Tasks;
 	using Xunit;
+	using static System.Net.Mime.MediaTypeNames;
 
 	public static class IniTextEscaperBufferTests
 	{
@@ -34,17 +35,65 @@
 				Assert.Empty(buf.ToString());
 			}
 		}
+		private static void CheckEscape(string text, IniTokenContext context, string expected)
+		{
+			IniTextEscaperBuffer buf = new(new(), DefaultIniTextEscaper.Default);
+			buf.Escape(text, context).ThrowIfError();
+			Assert.Equal(expected, buf.ToString());
+		}
+		private static void CheckUnescape(string text, IniTokenContext context, string expected)
+		{
+			IniTextEscaperBuffer buf = new(new(), DefaultIniTextEscaper.Default);
+			buf.Unescape(text, context).ThrowIfError();
+			Assert.Equal(expected, buf.ToString());
+		}
+		private static void CheckBadUnescape(string text, IniTokenContext context, IniErrorCode expectedCode, string? expectedMsg)
+		{
+			IniTextEscaperBuffer buf = new(new(), DefaultIniTextEscaper.Default);
+			Chk.IniError(expectedCode, expectedMsg, buf.Unescape(text, context));
+		}
 		[Fact]
 		public static void GoodEscapes()
 		{
-			throw new NotImplementedException();
-			IniTextEscaperBuffer buf = new(new(), DefaultIniTextEscaper.Default);
+			CheckEscape("F\\oo", IniTokenContext.Value, "F\\\\oo");
+			CheckEscape("F\0oo", IniTokenContext.Value, "F\\0oo");
+			CheckEscape("F\aoo", IniTokenContext.Value, "F\\aoo");
+			CheckEscape("F\boo", IniTokenContext.Value, "F\\boo");
+			CheckEscape("F\roo", IniTokenContext.Value, "F\\roo");
+			CheckEscape("F\noo", IniTokenContext.Value, "F\\noo");
+			CheckEscape("F=oo", IniTokenContext.Value, "F\\=oo");
+			CheckEscape("F:oo", IniTokenContext.Value, "F\\:oo");
+			CheckEscape("F]oo", IniTokenContext.Value, "F\\]oo");
+			CheckEscape("F[oo", IniTokenContext.Value, "F\\[oo");
+			CheckEscape("F;oo", IniTokenContext.Value, "F\\;oo");
+			CheckEscape("F#oo", IniTokenContext.Value, "F\\#oo");
+		}
+		//[Fact]
+		//public static void BadEscapes()
+		//{
+		//	 // TODO 
+		//}
+		[Fact]
+		public static void GoodUnescapes()
+		{
+			CheckUnescape("F\\\\oo", IniTokenContext.Value, "F\\oo");
+			CheckUnescape("F\\0oo", IniTokenContext.Value, "F\0oo");
+			CheckUnescape("F\\aoo", IniTokenContext.Value, "F\aoo");
+			CheckUnescape("F\\boo", IniTokenContext.Value, "F\boo");
+			CheckUnescape("F\\roo", IniTokenContext.Value, "F\roo");
+			CheckUnescape("F\\noo", IniTokenContext.Value, "F\noo");
+			CheckUnescape("F\\=oo", IniTokenContext.Value, "F=oo");
+			CheckUnescape("F\\:oo", IniTokenContext.Value, "F:oo");
+			CheckUnescape("F\\]oo", IniTokenContext.Value, "F]oo");
+			CheckUnescape("F\\[oo", IniTokenContext.Value, "F[oo");
+			CheckUnescape("F\\;oo", IniTokenContext.Value, "F;oo");
+			CheckUnescape("F\\#oo", IniTokenContext.Value, "F#oo");
 		}
 		[Fact]
-		public static void BadEscapes()
+		public static void BadUnescapes()
 		{
-			throw new NotImplementedException();
-			IniTextEscaperBuffer buf = new(new(), DefaultIniTextEscaper.Default);
+			CheckBadUnescape("Foo\\", IniTokenContext.Value, IniErrorCode.InvalidEscapeSequence, "Invalid escape sequence at index 3 of text:Foo\\");
+			CheckBadUnescape("F\\xoo", IniTokenContext.Value, IniErrorCode.InvalidEscapeSequence, "Invalid escape sequence at index 1 of text:F\\xoo");
 		}
 	}
 }

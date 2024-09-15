@@ -13,6 +13,9 @@
 - IniValueAcceptors have convenience methods for getting a default value or throwing an exception
 - IniStreamReader can be configured to trim section, key, and value content
 
+0.6
+- Support for escape sequences added, both reading and writing
+- 
 
 
 
@@ -20,8 +23,7 @@
 TODO
 The only real reason we would have to split the options up is because the span reader doesn't use all of them. Other than that we may as well keep it all in one struct.
 
-
-The thing is, since the IniSpanReader can read things in multiple chunks (but maybe not keys), it's a little bit tricky to do trimming. Considering that we may get an aribtrary amount of whitespace before we reach the next significant character, It is not exactly feasible to perform trimming within the IniSpanReader. Trimming would have to be performed on the level of an IniStreamReader.
+Allow a nullable Escaper; that way we can just skip escaping entirely if need be
 
 We can kinda implement the escape characters in the span reader. It just has to stop on the \, and return that as "escape character" or something. Then return it. It is up to the caller how to interpret that escape character though.
 

@@ -86,7 +86,7 @@ namespace IniFileNet.IO
 		start:
 			char c;
 			// When we're in the global state, we want to disallow reading keys.
-			// We take advantage of the fact that the Comment and CommentEnded states are a single bit to the CommentGlobal and CommentEndedGlobal states
+			// Comment and CommentEnded states are a single bit different to the CommentGlobal and CommentEndedGlobal states
 			// So, if we're in the global section of the file (i.e. no sections read yet) and the options specify no global keys are allowed, then we
 			// Set a flag which forbids keys
 			IniSpanReaderBlockState globalFlag = 0;
@@ -137,7 +137,7 @@ namespace IniFileNet.IO
 							{
 								goto case '=';
 							}
-							else goto default;
+							else { goto default; }
 						case '=':
 							_state = IniSpanReaderBlockState.Error;
 							_error = IniErrorCode.EmptyKeyName;
@@ -160,7 +160,6 @@ namespace IniFileNet.IO
 				case IniSpanReaderBlockState.Key:
 					{
 						int start = _position;
-
 						IdxEsc adv = Options.IgnoreKeyEscapes ? AdvanceToAny(Block, _position, keyEnd) : AdvanceToAnyEscapes(Block, _position, keyEnd, Backslash);
 						_position = adv.Index;
 						if (_position >= Block.Length)
@@ -196,8 +195,6 @@ namespace IniFileNet.IO
 					}
 				case IniSpanReaderBlockState.Value:
 					{
-						// TODO Maybe we want to process line continuations in the escaper?
-						int start = _position;
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -210,25 +207,46 @@ namespace IniFileNet.IO
 								return new(IniContentType.End, default);
 							}
 						}
+						int start = _position;
 						AdvanceToNewLine();
 						ReadOnlySpan<char> valueContent;
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
 							{
-								// If the very last character of a stream happens to be a backslash and we're allowing line continuations then we have to just pretend that
-								// it doesn't exist
-								_state = IniSpanReaderBlockState.ValueEnded;
-								valueContent = (Block[Block.Length - 1] == '\\' && Options.AllowLineContinuations)
-									? Block.Slice(start, (Block.Length - 1) - start)
-									: Block.Slice(start);
-								//return new(IniContentType.Value, content);
+								// If we have a block that ends with a slash, then we want to exclude the slash, and the next return should be "End"
+								// The same thing applies to comments. Keys and sections also get that treatment, minus the line continuations thing.
+								if (Block[Block.Length - 1] == '\\')
+								{
+									// Might be an escape sequence, so error
+									if (!Options.IgnoreValueEscapes)
+									{
+										return new(IniContentType.Error, Block);
+									}
+									else if (Options.AllowLineContinuations)
+									{
+										// Trailing line continuation, so just chop it off
+										valueContent = Block.Slice(start, (Block.Length - 1) - start);
+										_state = IniSpanReaderBlockState.ValueEnded;
+									}
+									else
+									{
+										// Keep the trailing slash; it's just another character
+										valueContent = Block.Slice(start);
+										_state = IniSpanReaderBlockState.ValueEnded;
+									}
+								}
+								else
+								{
+									valueContent = Block.Slice(start);
+									_state = IniSpanReaderBlockState.ValueEnded;
+								}
 							}
 							else
 							{
-								// If the very last character of the block happens to be a backslash then we make sure to NOT return that as part of the value
-								// because that may mean we end up skipping a line continuation as the first character of the next block may be \r or \n
-								if (Block[Block.Length - 1] == '\\' && Options.AllowLineContinuations)
+								// If the very last character of the block happens to be a backslash, then we make sure to NOT return that as part of the value.
+								// The reason being that backslashes require 2 characters to be correctly interpreted.
+								if (Block[Block.Length - 1] == '\\' && (Options.AllowLineContinuations || !Options.IgnoreValueEscapes))
 								{
 									// hop back to just before the \ so it gets copied over into the new block
 									_position = Block.Length - 1;
@@ -242,13 +260,11 @@ namespace IniFileNet.IO
 									else
 									{
 										valueContent = content;
-										//return new(IniContentType.Value, content);
 									}
 								}
 								else
 								{
 									valueContent = Block.Slice(start);
-									//return new(IniContentType.Value, Block.Slice(start));
 								}
 							}
 						}
@@ -259,13 +275,11 @@ namespace IniFileNet.IO
 								int end = _position - 1;
 								++_position;
 								valueContent = Block.Slice(start, end - start);
-								//return new(IniContentType.Value, Block.Slice(start, end - start));
 							}
 							else
 							{
 								_state = IniSpanReaderBlockState.ValueEnded;
 								valueContent = Block.Slice(start, _position - start);
-								//return new(IniContentType.Value, Block.Slice(start, _position - start));
 							}
 						}
 						IniContentType valueType = !Options.IgnoreValueEscapes
@@ -303,6 +317,7 @@ namespace IniFileNet.IO
 						}
 						AdvanceToNewLine();
 						ReadOnlySpan<char> commentContent;
+						// We don't need to care about line continutations within comments. Only have to worry about charater escapes.
 						if (_position >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -312,6 +327,17 @@ namespace IniFileNet.IO
 							if (Options.IgnoreComments)
 							{
 								goto start;
+							}
+							if (Block[Block.Length - 1] == '\\' && (!Options.IgnoreCommentEscapes))
+							{
+								if (IsFinalBlock)
+								{
+									return new(IniContentType.Error, Block);
+								}
+								else
+								{
+									commentContent = Block.Slice(start, (Block.Length - 1) - start);
+								}
 							}
 							else
 							{
@@ -327,6 +353,10 @@ namespace IniFileNet.IO
 							}
 							else
 							{
+								if (Block[Block.Length - 1] == '\\' && (!Options.IgnoreCommentEscapes))
+								{
+									_position = Block.Length - 1;
+								}
 								commentContent = Block.Slice(start, _position - start);
 							}
 						}
@@ -509,19 +539,26 @@ namespace IniFileNet.IO
 			bool esc = false;
 			int off = position;
 			ReadOnlySpan<char> str = block.Slice(off);
+			int index;
 			while (true)
 			{
 				int i = str.IndexOfAny(chars);
 				if (i == -1)
 				{
-					return new(block.Length, esc);
+					// TODO we need to check the block for backslashes as well don't we?
+					index = block.Length;
+					break;
 				}
 				else if (i > 0 && str[i - 1] == '\\')
 				{
 					// Escape sequence, so we need to search again, starting from 1 character ahead, if there's more to follow
 					// If there's nothing further, that counts as NOT finding anything
 					esc = true;
-					if (i + 1 > str.Length) return new(block.Length, esc);
+					if (i + 1 > str.Length)
+					{
+						index = block.Length;
+						break;
+					}
 					str = str.Slice(i + 1);
 					off += i + 1;
 				}
@@ -536,9 +573,16 @@ namespace IniFileNet.IO
 							.IndexOf(backslash) != -1;
 #endif
 					}
-					return new(i + off, esc);
+					index = i + off;
+					break;
 				}
 			}
+			// if we hit the end of a block and the very last character is a backslash then we can't return that; we need the next character to know what the escape sequence is
+			if (esc && index + 1 > block.Length)
+			{
+				--index;
+			}
+			return new(index, esc);
 		}
 		private void AdvanceToNewLine()
 		{
@@ -547,9 +591,7 @@ namespace IniFileNet.IO
 #else
 			int i = Block.Slice(_position).IndexOfAny(Syntax.NewLineCharsAsMemory.Span);
 #endif
-			_position = i == -1
-				? Block.Length
-				: i + _position;
+			_position = i == -1 ? Block.Length : i + _position;
 		}
 	}
 }

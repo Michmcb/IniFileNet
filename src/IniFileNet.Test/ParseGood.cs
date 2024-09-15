@@ -9,7 +9,7 @@ namespace IniFileNet.Test
 	public static class ParseGood
 	{
 		private const string KeyEqualsValueIni = "Key=Value";
-		private static readonly IniReaderOptions KeyEqualsValueOpt = new(allowGlobalKeys: true);
+		private static readonly IniReaderOptions KeyEqualsValueOpt = new(allowGlobalKeys: true, ignoreSectionEscapes: true, ignoreKeyEscapes: true, ignoreValueEscapes: true, ignoreCommentEscapes: true);
 		[Fact]
 		public static void KeyEqualsValueSpan()
 		{
@@ -37,10 +37,11 @@ namespace IniFileNet.Test
 			//await Chk.CheckAllIniDictionaryReader(KeyEqualsValueIni, KeyEqualsValueOpt, default, [x => Chk.IniValueKvp("Key", "Value", [], x)]);
 		}
 		private const string SectionKeyEqualsValueIni = ";Comment1\n[Section]\n;Comment2\n]Key=Value";
+		private static readonly IniReaderOptions SectionKeyEqualsValueOpt = new(ignoreSectionEscapes: true, ignoreKeyEscapes: true, ignoreValueEscapes: true, ignoreCommentEscapes: true);
 		[Fact]
 		public static void SectionKeyEqualsValueSpan()
 		{
-			IniSpanReaderChecker c = new(SectionKeyEqualsValueIni, default);
+			IniSpanReaderChecker c = new(SectionKeyEqualsValueIni, SectionKeyEqualsValueOpt);
 			c.Next(IniContentType.StartComment, ";");
 			c.Next(IniContentType.Comment, "Comment1");
 			c.Next(IniContentType.EndComment, "\n");
@@ -61,7 +62,7 @@ namespace IniFileNet.Test
 		[Fact]
 		public static async Task SectionKeyEqualsValueStream()
 		{
-			var (c1, c2) = Checks.For(SectionKeyEqualsValueIni, default);
+			var (c1, c2) = Checks.For(SectionKeyEqualsValueIni, SectionKeyEqualsValueOpt);
 			await c1.Next(IniToken.Comment, "Comment1");
 			await c1.Next(IniToken.Section, "Section");
 			await c1.Next(IniToken.Comment, "Comment2");
@@ -337,7 +338,7 @@ namespace IniFileNet.Test
 			//]);
 		}
 		public const string LineContinutationEndIni = "Key1=Value\\";
-		public static readonly IniReaderOptions LineContinutationEndOpt = new(allowGlobalKeys: true, allowLineContinuations: true);
+		public static readonly IniReaderOptions LineContinutationEndOpt = new(allowGlobalKeys: true, allowLineContinuations: true, ignoreValueEscapes: true);
 		[Fact]
 		public static void LineContinutationEndSpan()
 		{
@@ -540,6 +541,43 @@ namespace IniFileNet.Test
 			await c1.Next(IniToken.Value, "Big Lo]ng Value");
 			await c1.Next(IniToken.Comment, "Comment\a Stuff");
 			await c1.Next(IniToken.End, "");
+		}
+		public const string ValueEndingWithSlashIni = "Key=Value\\";
+		[Fact]
+		public static void ValueEndingWithSlash_BadEscapeSequence()
+		{
+			IniSpanReaderChecker c = new(ValueEndingWithSlashIni, new(allowGlobalKeys: true), false);
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.Key, "Key");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.Value, "Value");
+			c.Next(IniContentType.End, default);
+			c = c.NewBlock(ValueEndingWithSlashIni.Substring(c.Position), true);
+			c.Next(IniContentType.Error, "\\");
+		}
+		[Fact]
+		public static void ValueEndingWithSlash_LineContinuation()
+		{
+			IniSpanReaderChecker c = new(ValueEndingWithSlashIni, new(allowGlobalKeys: true, allowLineContinuations: true, ignoreValueEscapes: true), false);
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.Key, "Key");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.Value, "Value");
+			c.Next(IniContentType.End, default);
+		}
+		[Fact]
+		public static void CommentEscapeSequenceDifferentBlocks()
+		{
+			IniSpanReaderChecker c = new("; Hello \\", default, false);
+			c.Next(IniContentType.StartComment, ";");
+			c.Next(IniContentType.Comment, " Hello ");
+			c.Next(IniContentType.End, default);
+			c = c.NewBlock("\\nworld!", true);
+			c.Next(IniContentType.CommentEscaped, "\\nworld!");
+			c.Next(IniContentType.EndComment, default);
+			c.Next(IniContentType.End, default);
 		}
 		public const string SemicolonInKeyNameIni = "[Section]\nKe;y=Value";
 		[Fact]

@@ -15,6 +15,7 @@
 			reader = new IniSpanReader(ini, IniSpanReaderState.Init(options), isFinalBlock);
 		}
 		public readonly IniReaderOptions Options => reader.Options;
+		public readonly int Position => reader.Position;
 		public readonly IniSpanReaderChecker NewBlock(string ini, bool isFinalBlock)
 		{
 			IniSpanReader newReader = new(ini, reader.GetState().NewBlock(default, default, out _), isFinalBlock);
