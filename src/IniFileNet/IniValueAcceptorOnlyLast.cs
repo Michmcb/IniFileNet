@@ -27,7 +27,7 @@
 		/// <summary>
 		/// Returns <see langword="true"/> if <see cref="Value"/> is not <see langword="null"/>.
 		/// </summary>
-		public bool HaveValue => Value != null;
+		public bool HasValue => Value != null;
 		/// <summary>
 		/// Always updates <see cref="Value"/> and always returns <see cref="IniErrorCode.None"/>.
 		/// </summary>
@@ -52,9 +52,9 @@
 			Value = null;
 		}
 		/// <summary>
-		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or <paramref name="defaultValue"/> otherwise.
+		/// Returns <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or <paramref name="defaultValue"/> otherwise.
 		/// </summary>
-		/// <param name="defaultValue">The value to return when <see cref="HaveValue"/> is <see langword="false"/></param>
+		/// <param name="defaultValue">The value to return when <see cref="HasValue"/> is <see langword="false"/></param>
 		/// <returns><see cref="Value"/> or <paramref name="defaultValue"/>.</returns>
 		[return: NotNullIfNotNull(nameof(defaultValue))]
 		public string? ValueOr(string? defaultValue)
@@ -62,7 +62,7 @@
 			return Value ?? defaultValue;
 		}
 		/// <summary>
-		/// Returns an <see cref="IniResult{T}"/> with <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or an error of <see cref="IniErrorCode.ValueMissing"/> otherwise.
+		/// Returns an <see cref="IniResult{T}"/> with <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or an error of <see cref="IniErrorCode.ValueMissing"/> otherwise.
 		/// </summary>
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<string> ValueOrError()
@@ -70,7 +70,7 @@
 			return Value != null ? new IniResult<string>(Value, default) : new(null!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
-		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
+		/// Returns <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
 		/// </summary>
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public string ValueOrException()
@@ -104,7 +104,7 @@
 		/// <summary>
 		/// Whether or not this acceptor has a value.
 		/// </summary>
-		public bool HaveValue { get; set; }
+		public bool HasValue { get; set; }
 		/// <summary>
 		/// The parse function that attempts to parse the raw value.
 		/// </summary>
@@ -123,46 +123,46 @@
 			{
 				Section = section;
 				Key = key;
-				HaveValue = true;
+				HasValue = true;
 				Value = p.Value;
 			}
 			return p.Error;
 		}
 		/// <summary>
-		/// Resets <see cref="Value"/> to <see langword="default"/> and <see cref="HaveValue"/> to <see langword="false"/>, and <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
+		/// Resets <see cref="Value"/> to <see langword="default"/> and <see cref="HasValue"/> to <see langword="false"/>, and <see cref="Section"/> and <see cref="Key"/> to <see cref="string.Empty"/>.
 		/// </summary>
 		public void Reset()
 		{
 			Section = string.Empty;
 			Key = string.Empty;
 			Value = default;
-			HaveValue = false;
+			HasValue = false;
 		}
 		/// <summary>
-		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or <paramref name="defaultValue"/> otherwise.
+		/// Returns <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or <paramref name="defaultValue"/> otherwise.
 		/// </summary>
-		/// <param name="defaultValue">The value to return when <see cref="HaveValue"/> is <see langword="false"/></param>
+		/// <param name="defaultValue">The value to return when <see cref="HasValue"/> is <see langword="false"/></param>
 		/// <returns><see cref="Value"/> or <paramref name="defaultValue"/>.</returns>
 		[return: NotNullIfNotNull(nameof(defaultValue))]
 		public T? ValueOr(T? defaultValue)
 		{
-			return HaveValue ? Value : defaultValue;
+			return HasValue ? Value : defaultValue;
 		}
 		/// <summary>
-		/// Returns an <see cref="IniResult{T}"/> with <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or an error of <see cref="IniErrorCode.ValueMissing"/> otherwise.
+		/// Returns an <see cref="IniResult{T}"/> with <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or an error of <see cref="IniErrorCode.ValueMissing"/> otherwise.
 		/// </summary>
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<T> ValueOrError()
 		{
-			return HaveValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Section,	Key));
+			return HasValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Section,	Key));
 		}
 		/// <summary>
-		/// Returns <see cref="Value"/> if <see cref="HaveValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
+		/// Returns <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.
 		/// </summary>
 		/// <returns><see cref="Value"/> or throws <see cref="IniException"/>.</returns>
 		public T ValueOrException()
 		{
-			return HaveValue ? Value : throw IniError.KeyMissingValue(Section, Key).ToException();
+			return HasValue ? Value : throw IniError.KeyMissingValue(Section, Key).ToException();
 		}
 	}
 }

@@ -13,6 +13,11 @@
 			reader = new(new StringReader(ini), null, options);
 			readerAsync = new(new StringReader(ini), null, options);
 		}
+		public IniStreamReaderChecker(string ini, int bufferSize, IniReaderOptions options = default)
+		{
+			reader = new(new StringReader(ini), null, options, bufferSize: bufferSize);
+			readerAsync = new(new StringReader(ini), null, options, bufferSize: bufferSize);
+		}
 		public async Task Next(IniToken token, string content)
 		{
 			{

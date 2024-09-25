@@ -28,6 +28,6 @@
 		/// <summary>
 		/// True if this has accepted a value, false otherwise.
 		/// </summary>
-		bool HaveValue { get; }
+		bool HasValue { get; }
 	}
 }

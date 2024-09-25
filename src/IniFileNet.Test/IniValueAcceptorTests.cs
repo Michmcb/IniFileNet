@@ -20,7 +20,7 @@
 			Assert.Equal("value", x.ValueOr("foo"));
 			Chk.IniResult("value", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(new IniError(IniErrorCode.ValueAlreadyPresent, "Already accepted a value. This Section: \"s2\" Key: \"k2\". Last Section: \"s1\" Key: \"k1\". Value is: \"value\""), x.Accept("s2", "k2", "value"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
@@ -28,12 +28,12 @@
 			Assert.Equal("value", x.ValueOr("foo"));
 			Chk.IniResult("value", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			x.Reset();
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Null(x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "value"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -41,7 +41,7 @@
 			Assert.Equal("value", x.ValueOr("foo"));
 			Chk.IniResult("value", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void SingleParsed()
@@ -59,11 +59,11 @@
 			Assert.Equal(10, x.ValueOr(5));
 			Chk.IniResult(10, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(10, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(new IniError(IniErrorCode.ValueAlreadyPresent, "Already accepted a value. Key: \"k2\". Value is: \"15\""), x.Accept("s2", "k2", "15"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(10, x.Value);
 			Assert.Equal(10, x.ValueOr(5));
 			Chk.IniResult(10, IniErrorCode.None, x.ValueOrError());
@@ -72,7 +72,7 @@
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Equal(0, x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "20"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -80,7 +80,7 @@
 			Assert.Equal(20, x.ValueOr(5));
 			Chk.IniResult(20, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(20, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void OnlyFirst()
@@ -98,7 +98,7 @@
 			Assert.Equal("value1", x.ValueOr("foo"));
 			Chk.IniResult("value1", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value1", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(default, x.Accept("s2", "k2", "value2"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
@@ -106,12 +106,12 @@
 			Assert.Equal("value1", x.ValueOr("foo"));
 			Chk.IniResult("value1", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value1", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			x.Reset();
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Null(x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "value1"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -119,7 +119,7 @@
 			Assert.Equal("value1", x.ValueOr("foo"));
 			Chk.IniResult("value1", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value1", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void OnlyFirstParsed()
@@ -137,7 +137,7 @@
 			Assert.Equal(10, x.ValueOr(5));
 			Chk.IniResult(10, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(10, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(default, x.Accept("s2", "k2", "15"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
@@ -145,12 +145,12 @@
 			Assert.Equal(10, x.ValueOr(5));
 			Chk.IniResult(10, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(10, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			x.Reset();
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Equal(0, x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "20"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -158,7 +158,7 @@
 			Assert.Equal(20, x.ValueOr(5));
 			Chk.IniResult(20, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(20, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void OnlyLast()
@@ -176,7 +176,7 @@
 			Assert.Equal("value1", x.ValueOr("foo"));
 			Chk.IniResult("value1", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value1", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(default, x.Accept("s2", "k2", "value2"));
 			Assert.Equal("s2", x.Section);
 			Assert.Equal("k2", x.Key);
@@ -184,12 +184,12 @@
 			Assert.Equal("value2", x.ValueOr("foo"));
 			Chk.IniResult("value2", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value2", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			x.Reset();
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Null(x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "value1"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -197,7 +197,7 @@
 			Assert.Equal("value1", x.ValueOr("foo"));
 			Chk.IniResult("value1", IniErrorCode.None, null, x.ValueOrError());
 			Assert.Equal("value1", x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void OnlyLastParsed()
@@ -215,7 +215,7 @@
 			Assert.Equal(10, x.ValueOr(5));
 			Chk.IniResult(10, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(10, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Equal(default, x.Accept("s2", "k2", "15"));
 			Assert.Equal("s2", x.Section);
 			Assert.Equal("k2", x.Key);
@@ -223,12 +223,12 @@
 			Assert.Equal(15, x.ValueOr(5));
 			Chk.IniResult(15, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(15, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			x.Reset();
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Equal(0, x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 			Assert.Equal(default, x.Accept("s3", "k3", "20"));
 			Assert.Equal("s3", x.Section);
 			Assert.Equal("k3", x.Key);
@@ -236,7 +236,7 @@
 			Assert.Equal(20, x.ValueOr(5));
 			Chk.IniResult(20, IniErrorCode.None, x.ValueOrError());
 			Assert.Equal(20, x.ValueOrException());
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 		}
 		[Fact]
 		public static void Many()
@@ -264,7 +264,7 @@
 			Assert.Equal(default, x.Accept("s1", "k1", "value3"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 
 			List<string> oldValues = x.Value;
 			Assert.Same(x.Value, x.ValueOr(["1", "2", "3"]));
@@ -276,7 +276,7 @@
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Empty(x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 
 			Assert.Collection(oldValues,
 				x => Assert.Equal("value1", x),
@@ -289,7 +289,7 @@
 			Assert.Equal(default, x.Accept("s2", "k2", "value5"));
 			Assert.Equal("s2", x.Section);
 			Assert.Equal("k2", x.Key);
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Same(x.Value, x.ValueOr(["1", "2", "3"]));
 			ir = x.ValueOrError();
 			Assert.Same(x.Value, ir.Value);
@@ -317,7 +317,7 @@
 			Assert.Equal(default, x.Accept("s1", "k1", "3"));
 			Assert.Equal("s1", x.Section);
 			Assert.Equal("k1", x.Key);
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 
 			var oldValues = x.Value;
 			Assert.Same(x.Value, x.ValueOr([1, 2, 3]));
@@ -329,7 +329,7 @@
 			Assert.Empty(x.Section);
 			Assert.Empty(x.Key);
 			Assert.Empty(x.Value);
-			Assert.False(x.HaveValue);
+			Assert.False(x.HasValue);
 
 			Assert.Collection(oldValues,
 				x => Assert.Equal(1, x),
@@ -342,7 +342,7 @@
 			Assert.Equal(default, x.Accept("s2", "k2", "5"));
 			Assert.Equal("s2", x.Section);
 			Assert.Equal("k2", x.Key);
-			Assert.True(x.HaveValue);
+			Assert.True(x.HasValue);
 			Assert.Same(x.Value, x.ValueOr([1, 2, 3]));
 			ir = x.ValueOrError();
 			Assert.Same(x.Value, ir.Value);

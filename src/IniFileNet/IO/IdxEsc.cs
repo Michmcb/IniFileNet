@@ -1,7 +1,7 @@
 ﻿namespace IniFileNet.IO
 {
 	/// <summary>
-	/// An index, and whether or not an escape sequence was found.
+	/// An index, and whether or not a a slash (which marks an escape sequence) was found.
 	/// </summary>
 	public readonly ref struct IdxEsc
 	{
@@ -9,19 +9,19 @@
 		/// Creates a new instance.
 		/// </summary>
 		/// <param name="index">The index.</param>
-		/// <param name="escape">Whether or not an escape sequence was found.</param>
-		public IdxEsc(int index, bool escape)
+		/// <param name="slashIndex">The index of the slash, or -1 if not found.</param>
+		public IdxEsc(int index, int slashIndex)
 		{
 			Index = index;
-			Escape = escape;
+			SlashIndex = slashIndex;
 		}
 		/// <summary>
 		/// The index.
 		/// </summary>
 		public int Index { get; }
 		/// <summary>
-		/// Whether or not an escape sequence was found.
+		/// The index of the slash, or -1 if not found.
 		/// </summary>
-		public bool Escape { get; }
+		public int SlashIndex { get; }
 	}
 }

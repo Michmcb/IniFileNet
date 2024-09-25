@@ -33,7 +33,7 @@
 		/// <exception cref="ArgumentException">When <paramref name="key"/> is null or empty.</exception>
 		public static string GetFullKey(ReadOnlySpan<char> section, ReadOnlySpan<char> key, ReadOnlySpan<char> delimiter)
 		{
-			if (key.Length == 0) throw new ArgumentException("", nameof(key));
+			if (key.Length == 0) throw new ArgumentException("Key cannot be an empty string", nameof(key));
 			if (section.Length == 0)
 			{
 				return key.ToString();

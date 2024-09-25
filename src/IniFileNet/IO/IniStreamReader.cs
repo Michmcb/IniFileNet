@@ -94,8 +94,8 @@
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = Reader.Read(buf, copied, buf.Length - copied);
 #else
-					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					int charsRead = Reader.Read(buf.Span.Slice(copied));
+					state = state.NewBlock(buf.Span[..currentDataSize], buf.Span, out int copied);
+					int charsRead = Reader.Read(buf.Span[copied..]);
 #endif
 					totalPosition += pos;
 					currentDataSize = copied + charsRead;
@@ -128,8 +128,8 @@
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = await Reader.ReadAsync(buf, copied, buf.Length - copied);
 #else
-					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					int charsRead = await Reader.ReadAsync(buf.Slice(copied));
+					state = state.NewBlock(buf.Span[..currentDataSize], buf.Span, out int copied);
+					int charsRead = await Reader.ReadAsync(buf[copied..]);
 #endif
 					totalPosition += pos;
 					currentDataSize = copied + charsRead;
@@ -143,7 +143,7 @@
 #if NETSTANDARD2_0
 			buf.AsSpan(0, currentDataSize)
 #else
-			buf.Slice(0, currentDataSize).Span
+			buf[..currentDataSize].Span
 #endif
 				, state, isFinalBlock);
 			IniToken token = IniToken.End;
@@ -183,7 +183,7 @@
 							{
 								Error = error;
 								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
-									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping key text:",
 #if NETSTANDARD2_0
 									ic.Content.ToString())));
 #else
@@ -200,7 +200,7 @@
 							{
 								Error = error;
 								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
-									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping value text:",
 #if NETSTANDARD2_0
 									ic.Content.ToString())));
 #else
@@ -217,7 +217,7 @@
 							{
 								Error = error;
 								return new ReadResult(IniToken.Error, string.Concat("Error unescaping at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
-									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping comment text:",
+									p.ToString(CultureInfo.InvariantCulture), " in block. ", error.Msg ?? string.Concat("Error unescaping section text:",
 #if NETSTANDARD2_0
 									ic.Content.ToString())));
 #else
@@ -263,15 +263,15 @@
 						state = sr.GetState();
 						string s = ic.Content.ToString();
 						Error = new(sr.ErrorCode, string.Concat("Error at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
-							p.ToString(CultureInfo.InvariantCulture) ," in block. This is the block in which the error was encountered:", s));
+							p.ToString(CultureInfo.InvariantCulture), " in block. This is the block in which the error was encountered:", s));
 						return new ReadResult(IniToken.Error, s);
 				}
 			}
 			state = sr.GetState();
 			string content = token switch
 			{
-				IniToken.Section => Options.TrimSections ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
-				IniToken.Key => Options.TrimKeys ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
+				IniToken.Section => contentBuilder.ToString(),
+				IniToken.Key => contentBuilder.ToString(),
 				IniToken.Value => Options.TrimValues ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
 				_ => contentBuilder.ToString(),
 			};

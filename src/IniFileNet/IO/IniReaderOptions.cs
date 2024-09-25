@@ -77,29 +77,16 @@
 		/// </summary>
 		public bool IgnoreCommentEscapes { get; }
 		/// <summary>
-		/// When reading, all section names will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all section names will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimSections { get; }
 		/// <summary>
-		/// When reading, all keys will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all keys will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimKeys { get; }
 		/// <summary>
-		/// When reading, all values will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all values will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimValues { get; }
-		///// <summary>
-		///// Creates a new instance of <see cref="IniReaderOptions"/> with the relevant options copied.
-		///// </summary>
-		///// <param name="options">The value to convert.</param>
-		//public static implicit operator IniReaderOptions(IniReaderOptions options) => new(options.AllowGlobalKeys, options.AllowCommentsNumberSign, options.AllowKeyDelimiterColon, options.AllowLineContinuations, options.IgnoreComments);
-		///// <summary>
-		///// Creates a new instance of <see cref="IniStreamReaderOptions"/> with the relevant options copied.
-		///// </summary>
-		///// <param name="options">The value to convert.</param>
-		//public static implicit operator IniStreamReaderOptions(IniReaderOptions options) => new(options.TrimSections, options.TrimKeys, options.TrimValues);
 	}
 }

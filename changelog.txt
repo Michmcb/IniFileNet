@@ -15,7 +15,8 @@
 
 0.6
 - Support for escape sequences added, both reading and writing
-- 
+- Trimming strings is supported by IniSpanReader
+- Renamed HaveValue to HasValue to be consistent with .NET
 
 
 
@@ -23,8 +24,19 @@
 TODO
 The only real reason we would have to split the options up is because the span reader doesn't use all of them. Other than that we may as well keep it all in one struct.
 
-Allow a nullable Escaper; that way we can just skip escaping entirely if need be
+Allow a null Escaper; that way we can just skip escaping entirely if need be
 
 We can kinda implement the escape characters in the span reader. It just has to stop on the \, and return that as "escape character" or something. Then return it. It is up to the caller how to interpret that escape character though.
 
 IniStreamReader: Make sure that the StreamPosition property is accurate. This is a bit tricky, I guess? The best we could do is make sure that it always advances by the same number of characters as the content, except in the case of errors because those always give us until the end of the buffer.
+
+
+
+Values can probably allow partial content as well since values may be large. Plus, line continuations are a thing. So we'll have to allow partial content.
+
+
+We need to be consistent across all calls. Ideally...
+#1 We want to issue an error as soon as possible
+#2 Ideally we do not want to issue any 0-length content of Key/Value/Section/Comment, unless it logically makes sense to do so (Empty values, sections, and comments may be legal in some cases. Empty keys are never legal.). But this is not as big of a deal as they don't do much harm.
+
+Try to get rid of any 0-length strings issued with error. Perhaps try using contentBuilder instead.

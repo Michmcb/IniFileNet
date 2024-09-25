@@ -15,6 +15,10 @@
 			IniException ex = new IniError(IniErrorCode.SectionCloseBracketNotFound, "BlahBlah").ToException();
 			Assert.Equal(IniErrorCode.SectionCloseBracketNotFound, ex.IniErrorCode);
 			Assert.Equal("BlahBlah", ex.Message);
+
+			IniException ex2 = new IniError(IniErrorCode.DuplicateKey, null).ToException();
+			Assert.Equal(IniErrorCode.DuplicateKey, ex2.IniErrorCode);
+			Assert.Equal("", ex2.Message);
 		}
 		[Fact]
 		public static void Throw()
