@@ -26,13 +26,8 @@ The only real reason we would have to split the options up is because the span r
 
 Allow a null Escaper; that way we can just skip escaping entirely if need be
 
-We can kinda implement the escape characters in the span reader. It just has to stop on the \, and return that as "escape character" or something. Then return it. It is up to the caller how to interpret that escape character though.
 
-IniStreamReader: Make sure that the StreamPosition property is accurate. This is a bit tricky, I guess? The best we could do is make sure that it always advances by the same number of characters as the content, except in the case of errors because those always give us until the end of the buffer.
-
-
-
-Values can probably allow partial content as well since values may be large. Plus, line continuations are a thing. So we'll have to allow partial content.
+Values and Comments should allow partial content since values may be large. Plus, line continuations are a thing for values, so partial values are basically required.
 
 
 We need to be consistent across all calls. Ideally...

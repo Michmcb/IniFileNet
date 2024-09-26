@@ -71,7 +71,7 @@
 		//[Fact]
 		//public static void BadEscapes()
 		//{
-		//	 // TODO 
+		//	 // TODO Bad escape sequences
 		//}
 		[Fact]
 		public static void GoodUnescapes()

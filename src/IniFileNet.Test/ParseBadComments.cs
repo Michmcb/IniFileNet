@@ -4,12 +4,8 @@
 	using System.Threading.Tasks;
 	using Xunit;
 
-	public static class ParseBad
+	public static class ParseBadComments
 	{
-		
-		
-		
-		
 		public const string BadCommentEscapeSequenceIni = ";F\\xoo";
 		[Fact]
 		public static async Task BadCommentEscapeSequenceStream()

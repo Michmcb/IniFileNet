@@ -236,10 +236,7 @@ namespace IniFileNet.IO
 				case IniSpanReaderBlockState.Value:
 					return HandleValue();
 				case IniSpanReaderBlockState.ValueEnded:
-					{
-						_state = IniSpanReaderBlockState.Any;
-						return new(IniContentType.EndValue, _position < Block.Length ? Block.Slice(_position, 1) : default);
-					}
+					return HandleNewLineAndReturn(IniContentType.EndValue, IniSpanReaderBlockState.Any);
 				case IniSpanReaderBlockState.CommentGlobal:
 					globalFlag = IniSpanReaderBlockState.Any;
 					goto case IniSpanReaderBlockState.Comment;
@@ -316,26 +313,26 @@ namespace IniFileNet.IO
 					}
 				case IniSpanReaderBlockState.CommentEndedGlobal:
 					{
-						_state = IniSpanReaderBlockState.Global;
 						if (Options.IgnoreComments)
 						{
+							_state = IniSpanReaderBlockState.Global;
 							goto start;
 						}
 						else
 						{
-							return new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+							return HandleNewLineAndReturn(IniContentType.EndComment, IniSpanReaderBlockState.Global);
 						}
 					}
 				case IniSpanReaderBlockState.CommentEnded:
 					{
-						_state = IniSpanReaderBlockState.Any;
 						if (Options.IgnoreComments)
 						{
+							_state = IniSpanReaderBlockState.Any;
 							goto start;
 						}
 						else
 						{
-							return new(IniContentType.EndComment, _position < Block.Length ? Block.Slice(_position, 1) : default);
+							return HandleNewLineAndReturn(IniContentType.EndComment, IniSpanReaderBlockState.Any);
 						}
 					}
 				case IniSpanReaderBlockState.Section:
@@ -421,6 +418,39 @@ namespace IniFileNet.IO
 					return new(IniContentType.Error, Block);
 			}
 		}
+		private IniContent HandleNewLineAndReturn(IniContentType contentType, IniSpanReaderBlockState newState)
+		{
+			ReadOnlySpan<char> content;
+			if (_position < Block.Length)
+			{
+				if (Block[_position] == '\n')
+				{
+					content = Block.Slice(_position, 1);
+				}
+				else if (_position + 1 < Block.Length)
+				{
+					if (Block[_position + 1] == '\n')
+					{
+						content = Block.Slice(_position, 2);
+					}
+					else
+					{
+						content = Block.Slice(_position, 1);
+					}
+				}
+				else
+				{
+					if (IsFinalBlock) { content = Block.Slice(_position, 1); }
+					else { return new IniContent(IniContentType.End, default); }
+				}
+			}
+			else
+			{
+				content = default;
+			}
+			_state = newState;
+			return new(contentType, content);
+		}
 		private IniContent HandleValue()
 		{
 			if (_position >= Block.Length)
@@ -478,15 +508,32 @@ namespace IniFileNet.IO
 						_position = Block.Length - 1;
 						// Additionally, if the content is empty, then that means we've consumed everything up to the backslash
 						// So we say that we hit the end to avoid getting stuck in an infinite loop of empty value content
-						valueContent = Block.Slice(start, _position - start);
-						if (valueContent.Length == 0)
+						if (_position == start)
 						{
 							return new(IniContentType.End, default);
 						}
+						valueContent = Block.Slice(start, _position - start);
 					}
 					else
 					{
-						valueContent = Block.Slice(start);
+						// If we're trimming values then we need to leave all trailing whitespace in the block,
+						// so it can be handled later.
+						if (Options.TrimValues && char.IsWhiteSpace(Block[Block.Length - 1]))
+						{
+							int pos = Block.Length;
+							while (char.IsWhiteSpace(Block[--pos]));
+							_position = pos + 1;
+							// If no content besides the trailing whitespace, then say we hit the end to avoid infinite loop
+							if (_position == start)
+							{
+								return new(IniContentType.End, default);
+							}
+							valueContent = Block.Slice(start, _position - start);
+						}
+						else
+						{
+							valueContent = Block.Slice(start);
+						}
 					}
 				}
 			}

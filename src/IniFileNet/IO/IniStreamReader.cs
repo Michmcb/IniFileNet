@@ -272,7 +272,7 @@
 			{
 				IniToken.Section => contentBuilder.ToString(),
 				IniToken.Key => contentBuilder.ToString(),
-				IniToken.Value => Options.TrimValues ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
+				IniToken.Value => contentBuilder.ToString(),//Options.TrimValues ? contentBuilder.ToStringTrimmed() : contentBuilder.ToString(),
 				_ => contentBuilder.ToString(),
 			};
 			return new ReadResult(token, content);
