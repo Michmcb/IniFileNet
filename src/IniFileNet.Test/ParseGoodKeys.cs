@@ -360,9 +360,9 @@
 			IniDictionaryReader<string> last = new(StringComparer.OrdinalIgnoreCase);
 			last.Load(new IniStreamReader(new StringReader(TwoKeysValueIni), null, TwoKeysValueOpt), IniDictionaryReader.StringOnlyLast).ThrowIfError();
 			Assert.Collection(last.Dictionary, [x => Assert.Equal(new("Section.Key", "Value2"), x)]);
-			IniDictionaryReader<string> first = new(StringComparer.OrdinalIgnoreCase);
+			IniDictionaryReader<string> first = new(StringComparer.OrdinalIgnoreCase, ":");
 			first.Load(new IniStreamReader(new StringReader(TwoKeysValueIni), null, TwoKeysValueOpt), IniDictionaryReader.StringOnlyFirst).ThrowIfError();
-			Assert.Collection(first.Dictionary, [x => Assert.Equal(new("Section.Key", "Value1"), x)]);
+			Assert.Collection(first.Dictionary, [x => Assert.Equal(new("Section:Key", "Value1"), x)]);
 
 			IniDictionaryReader<string> single = new(StringComparer.OrdinalIgnoreCase);
 			Chk.IniError(IniErrorCode.ValueAlreadyPresent, "Section & key already present. Full Key: \"Section.Key\". Value is: \"Value2\"", single.Load(new IniStreamReader(new StringReader(TwoKeysValueIni), null, TwoKeysValueOpt), IniDictionaryReader.StringSingle));

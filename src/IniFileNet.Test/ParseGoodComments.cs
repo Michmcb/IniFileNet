@@ -99,6 +99,17 @@
 
 			await Chk.CheckAllIniDictionaryReader(CommentEndCrLfIni, CommentEndCrLfOpt, default, []);
 		}
+		[Fact]
+		public static void CommentEndCrLf_MultipleBlocks()
+		{
+			IniSpanReaderChecker c = new(CommentEndCrLfIni, CommentEndCrLfIni.Length - 1, CommentEndCrLfOpt, false);
+			c.Next(IniContentType.StartComment, ";");
+			c.Next(IniContentType.Comment, "Foo");
+			c.Next(IniContentType.End, default);
+			c = c.NewBlock(CommentEndCrLfIni, true, 2);
+			c.Next(IniContentType.EndComment, "\r\n");
+			c.Next(IniContentType.End, default);
+		}
 		public const string SlashEndCommentIni = ";Foo\\";
 		public static readonly IniReaderOptions SlashEndCommentOpt = new(allowLineContinuations: false, ignoreCommentEscapes: true);
 		[Fact]

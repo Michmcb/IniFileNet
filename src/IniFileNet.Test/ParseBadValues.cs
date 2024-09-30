@@ -1,7 +1,6 @@
 ﻿namespace IniFileNet.Test
 {
 	using IniFileNet.IO;
-	using System;
 	using System.Threading.Tasks;
 	using Xunit;
 	public static class ParseBadValues
@@ -18,7 +17,7 @@
 
 			await c2.Error(IniErrorCode.InvalidEscapeSequence);
 
-			await Chk.CheckAllIniDictionaryReader(BadValueEscapeSequenceIni, BadValueEscapeSequenceOpt, new IniError(IniErrorCode.InvalidEscapeSequence, "Invalid escape sequence at index 1 of text:B\\xar"), []);
+			await Chk.CheckAllIniDictionaryReader(BadValueEscapeSequenceIni, BadValueEscapeSequenceOpt, new IniError(IniErrorCode.InvalidEscapeSequence, "Error unescaping at char 4 in stream, char 4 in block. Invalid escape sequence at index 1 of text:B\\xar"), []);
 		}
 		public const string TrailingSlashEscapeSequenceIni = "Key=Value\\";
 		public static readonly IniReaderOptions TrailingSlashEscapeSequenceOpt = new(allowGlobalKeys: true);

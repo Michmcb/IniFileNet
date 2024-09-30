@@ -1,4 +1,4 @@
-﻿namespace IniFileNet.IO
+﻿namespace IniFileNet
 {
 	/// <summary>
 	/// The type of ini token is currently being read or written.

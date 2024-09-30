@@ -129,14 +129,14 @@ namespace IniFileNet.Test
 				x => Assert.Equal(new("Section.Key2 ", " Value2"), x),
 			]);
 		}
-		public const string EscapeSequencesIni = "[B\\\\ig \\0Lon\\bg \\rSe\\nction Name]\nBig Long\\= Key Name=Big Lo\\]ng Value\n;Comment\\a Stuff\n";
+		public const string EscapeSequencesIni = "[B\\\\ig Long \\rSe\\nction Name]\nBig Long\\= Key Name=Big Lo\\]ng Value\n;Comm\\rent Stuff\n";
 		public static readonly IniReaderOptions EscapeSequencesOpt = default;
 		[Fact]
 		public static void EscapeSequencesSpan()
 		{
 			IniSpanReaderChecker c = new(EscapeSequencesIni, EscapeSequencesOpt);
 			c.Next(IniContentType.StartSection, "[");
-			c.Next(IniContentType.SectionEscaped, "B\\\\ig \\0Lon\\bg \\rSe\\nction Name");
+			c.Next(IniContentType.SectionEscaped, "B\\\\ig Long \\rSe\\nction Name");
 			c.Next(IniContentType.EndSection, "]");
 			c.Next(IniContentType.StartKey, default);
 			c.Next(IniContentType.KeyEscaped, "Big Long\\= Key Name");
@@ -145,7 +145,7 @@ namespace IniFileNet.Test
 			c.Next(IniContentType.ValueEscaped, "Big Lo\\]ng Value");
 			c.Next(IniContentType.EndValue, "\n");
 			c.Next(IniContentType.StartComment, ";");
-			c.Next(IniContentType.CommentEscaped, "Comment\\a Stuff");
+			c.Next(IniContentType.CommentEscaped, "Comm\\rent Stuff");
 			c.Next(IniContentType.EndComment, "\n");
 			c.Next(IniContentType.End, default);
 		}
@@ -153,12 +153,11 @@ namespace IniFileNet.Test
 		public static async Task EscapeSequencesStream()
 		{
 			var (c1, c2) = Checks.For(EscapeSequencesIni, default);
-			await c1.Next(IniToken.Section, "B\\ig \0Lon\bg \rSe\nction Name");
+			await c1.Next(IniToken.Section, "B\\ig Long \rSe\nction Name");
 			await c1.Next(IniToken.Key, "Big Long= Key Name");
 			await c1.Next(IniToken.Value, "Big Lo]ng Value");
-			await c1.Next(IniToken.Comment, "Comment\a Stuff");
+			await c1.Next(IniToken.Comment, "Comm\rent Stuff");
 			await c1.Next(IniToken.End, "");
 		}
-
 	}
 }

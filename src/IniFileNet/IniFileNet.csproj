@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <Title>IniFileNet</Title>
-    <Version>0.5</Version>
+    <Version>0.6</Version>
     <Authors>Michael McBride</Authors>
     <Company></Company>
     <Product>IniFileNet</Product>
@@ -15,9 +15,9 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
-    <PackageReleaseNotes>- IniValueAcceptors accept the section and key, to provide better error messages
-- IniValueAcceptors have convenience methods for getting a default value or throwing an exception
-- IniStreamReader can be configured to trim section, key, and value content</PackageReleaseNotes>
+    <PackageReleaseNotes>- Support for escape sequences added, both reading and writing
+- Trimming strings is supported by IniSpanReader
+- Renamed HaveValue to HasValue to be consistent with .NET</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

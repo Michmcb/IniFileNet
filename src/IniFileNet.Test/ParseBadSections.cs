@@ -82,7 +82,7 @@
 
 			await c2.Error(IniErrorCode.InvalidEscapeSequence);
 
-			await Chk.CheckAllIniDictionaryReader(BadSectionEscapeSequence, default, new IniError(IniErrorCode.InvalidEscapeSequence, "Invalid escape sequence at index 1 of text:F\\xoo"), []);
+			await Chk.CheckAllIniDictionaryReader(BadSectionEscapeSequence, default, new IniError(IniErrorCode.InvalidEscapeSequence, "Error unescaping at char 0 in stream, char 1 in block. Invalid escape sequence at index 1 of text:F\\xoo"), []);
 		}
 		public const string TrailingSlashSectionIni = "[Section\\";
 		public static readonly IniReaderOptions TrailingSlashSectionOpt = new();

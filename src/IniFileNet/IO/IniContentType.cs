@@ -15,7 +15,7 @@
 		/// </summary>
 		StartSection,
 		/// <summary>
-		/// Part of a section name between [ and ].
+		/// The entirety of a section name between [ and ].
 		/// Content is the section name.
 		/// </summary>
 		Section,
@@ -35,7 +35,7 @@
 		/// </summary>
 		StartKey,
 		/// <summary>
-		/// Part of a key name.
+		/// The entirety of a key name.
 		/// Content is the portion of the key name that was read.
 		/// </summary>
 		Key,

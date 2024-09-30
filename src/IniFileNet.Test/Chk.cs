@@ -2,6 +2,7 @@
 {
 	using IniFileNet.IO;
 	using System;
+	using System.Buffers;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Threading.Tasks;
@@ -24,20 +25,30 @@
 			Assert.Equal(code, actual.Code);
 			Assert.Equal(msg, actual.Msg);
 		}
+		public static void IniException(IniErrorCode code, string? msg, IniException actual)
+		{
+			Assert.Equal(code, actual.IniErrorCode);
+			Assert.Equal(msg, actual.Message);
+		}
+		public static void OperationStatusMsg(OperationStatus status, string? msg, OperationStatusMsg actual)
+		{
+			Assert.Equal(status, actual.Status);
+			Assert.Equal(msg, actual.Msg);
+		}
 		public static async Task CheckAllIniDictionaryReader(string ini, IniReaderOptions opt, IniError expectedError, Action<KeyValuePair<string, string>>[] elementInspectors)
 		{
 			foreach (AddDictionaryValue<string> func in StringLastFirstSingleDelegates())
 			{
 				{
 					IniDictionaryReader<string> readerSync = new();
-					IniError actualError = readerSync.Load(new(new StringReader(ini), null, opt), func);
+					IniError actualError = readerSync.Load(new(new StringReader(ini), DefaultIniTextEscaper.Default, opt), func);
 					Assert.Equal(expectedError.Code, actualError.Code);
 					Assert.Equal(expectedError.Msg, actualError.Msg);
 					Assert.Collection(readerSync.Dictionary, elementInspectors);
 				}
 				{
 					IniDictionaryReader<string> readerAsync = new();
-					IniError actualError = await readerAsync.LoadAsync(new(new StringReader(ini), null, opt), func);
+					IniError actualError = await readerAsync.LoadAsync(new(new StringReader(ini), DefaultIniTextEscaper.Default, opt), func);
 					Assert.Equal(expectedError.Code, actualError.Code);
 					Assert.Equal(expectedError.Msg, actualError.Msg);
 					Assert.Collection(readerAsync.Dictionary, elementInspectors);

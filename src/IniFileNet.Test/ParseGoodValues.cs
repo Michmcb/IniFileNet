@@ -297,6 +297,20 @@
 
 			await Chk.CheckAllIniDictionaryReader(EndLineCrLfIni, EndLineCrLfOpt, default, [x => Assert.Equal(new("Key", "Value"), x)]);
 		}
+		[Fact]
+		public static void EndLineCrLfSpan_MultipleBlocks()
+		{
+			IniSpanReaderChecker c = new(EndLineCrLfIni, EndLineCrLfIni.Length - 1, EndLineCrLfOpt, false);
+			c.Next(IniContentType.StartKey, default);
+			c.Next(IniContentType.Key, "Key");
+			c.Next(IniContentType.EndKey, "=");
+			c.Next(IniContentType.StartValue, default);
+			c.Next(IniContentType.Value, "Value");
+			c.Next(IniContentType.End, default);
+			c = c.NewBlock(EndLineCrLfIni, true, 2);
+			c.Next(IniContentType.EndValue, "\r\n");
+			c.Next(IniContentType.End, default);
+		}
 		private const string PartialValueIni = "Key=Foo Bar Baz";
 		private static readonly IniReaderOptions PartialValueOpt = new(allowGlobalKeys: true);
 		[Fact]

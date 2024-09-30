@@ -1,7 +1,9 @@
 ﻿namespace IniFileNet.IO
 {
+	using IniFileNet;
 	using System;
 	using System.IO;
+
 	/// <summary>
 	/// Writes an ini text stream.
 	/// </summary>
@@ -14,10 +16,10 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniStreamWriter(TextWriter writer, NewLineStyle newLine, IniTextEscaperBuffer? escaper = null, KeyDelimStyle keyDelimStyle = default, CommentStyle commentStyle = default, bool leaveOpen = false)
+		public IniStreamWriter(TextWriter writer, IIniTextEscaper? escaper, NewLineStyle newLine, KeyDelimStyle keyDelimStyle = default, CommentStyle commentStyle = default, bool leaveOpen = false)
 		{
 			this.writer = writer;
-			Escaper = escaper ?? new IniTextEscaperBuffer(new(), DefaultIniTextEscaper.Default);
+			Escaper = escaper;
 			NewLine = newLine switch
 			{
 				NewLineStyle.Lf => lf,
@@ -44,7 +46,7 @@
 		/// <summary>
 		/// The escaper to use when escaping text to write.
 		/// </summary>
-		public IniTextEscaperBuffer Escaper { get; }
+		public IIniTextEscaper? Escaper { get; }
 		/// <summary>
 		/// The key delimiter character to use.
 		/// </summary>
@@ -58,22 +60,31 @@
 		/// </summary>
 		public bool LeaveOpen { get; set; }
 		/// <summary>
-		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// Writes a section name. Throws <see cref="ArgumentException"/> if <paramref name="name"/> is empty.
 		/// </summary>
 		/// <param name="name">The section name.</param>
-		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is empty.</exception>
 		public void WriteSection(string name) => WriteSection(name.AsSpan());
 		/// <summary>
-		/// Writes a section name. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// Writes a section name. Throws <see cref="ArgumentException"/> if <paramref name="name"/> is empty.
 		/// </summary>
 		/// <param name="name">The section name.</param>
-		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalSectionName(ReadOnlySpan{char})"/> returns <see langword="false"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is empty.</exception>
 		public void WriteSection(ReadOnlySpan<char> name)
 		{
 			if (name.IsEmpty) throw new ArgumentException("Illegal section name", nameof(name));
 			writer.Write('[');
-			Escaper.Escape(name, IniTokenContext.Section).ThrowIfError();
-			Escaper.WriteTo(writer);
+			if (Escaper != null)
+			{
+				if (!IniTextEscaperWriter.EscapeTo(name, stackalloc char[1024], IniTokenContext.Section, Escaper, writer, out string? errMsg))
+				{
+					throw CannotEscapeTextException(name, errMsg);
+				}
+			}
+			else
+			{
+				writer.Write(name);
+			}
 			writer.Write(']');
 			writer.Write(NewLine);
 		}
@@ -92,6 +103,8 @@
 		{
 			writer.Write(CommentStart);
 
+			IniTextEscaperWriter w = Escaper != null ? new(Escaper, writer) : default;
+
 			int nl;
 #if NET8_0_OR_GREATER
 			while ((nl = comment.IndexOfAny(Syntax.NewLineChars)) != -1)
@@ -99,8 +112,17 @@
 			while ((nl = comment.IndexOfAny(Syntax.NewLineCharsAsMemory.Span)) != -1)
 #endif
 			{
-				Escaper.Escape(comment.Slice(0, nl), IniTokenContext.Comment).ThrowIfError();
-				Escaper.WriteTo(writer);
+				if (Escaper != null)
+				{
+					if (!w.StackEscape(comment.Slice(0, nl), IniTokenContext.Comment, out string? errMsg))
+					{
+						throw CannotEscapeTextException(comment.Slice(0, nl), errMsg);
+					}
+				}
+				else
+				{
+					writer.Write(comment.Slice(0, nl));
+				}
 				// If we hit \r and the next character is \n, we skip 2
 				// Otherwise, just skip 1
 				int nlLength = comment[nl] == '\r' && comment.Length >= nl + 1 && comment[nl + 1] == '\n' ? 2 : 1;
@@ -118,31 +140,54 @@
 
 				comment = comment.Slice(nl);
 			}
-			Escaper.Escape(comment, IniTokenContext.Comment).ThrowIfError();
-			Escaper.WriteTo(writer);
+			if (Escaper != null)
+			{
+				if (!w.StackEscape(comment, IniTokenContext.Comment, out string? errMsg))
+				{
+					throw CannotEscapeTextException(comment, errMsg);
+				}
+			}
+			else
+			{
+				writer.Write(comment);
+			}
 			writer.Write(NewLine);
 		}
 		/// <summary>
-		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <paramref name="key"/> is empty or entire whitespace.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
-		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="key"/> is empty or entire whitespace.</exception>
 		public void WriteKeyValue(string key, string value) => WriteKeyValue(key.AsSpan(), value.AsSpan());
 		/// <summary>
-		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/> returns <see langword="false"/>.
+		/// Writes <paramref name="key"/>, then <see cref="KeyDelim"/>, then <paramref name="value"/>. Throws <see cref="ArgumentException"/> if <paramref name="key"/> is empty or entire whitespace.
 		/// </summary>
 		/// <param name="key">The key.</param>
 		/// <param name="value">The value.</param>
-		/// <exception cref="ArgumentException">Thrown if <see cref="Syntax.IsLegalKey(ReadOnlySpan{char})"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="key"/> is empty or entire whitespace.</exception>
 		public void WriteKeyValue(ReadOnlySpan<char> key, ReadOnlySpan<char> value)
 		{
 			if (key.IsEmpty || key.IsWhiteSpace()) throw new ArgumentException("Illegal key name", nameof(key));
-			Escaper.Escape(key, IniTokenContext.Key).ThrowIfError();
-			Escaper.WriteTo(writer);
-			writer.Write(KeyDelim);
-			Escaper.Escape(value, IniTokenContext.Value).ThrowIfError();
-			Escaper.WriteTo(writer);
+			if (Escaper != null)
+			{
+				Span<char> buf = stackalloc char[1024];
+				if (!IniTextEscaperWriter.EscapeTo(key, buf, IniTokenContext.Key, Escaper, writer, out string? errMsg))
+				{
+					throw CannotEscapeTextException(key, errMsg);
+				}
+				writer.Write(KeyDelim);
+				if (!IniTextEscaperWriter.EscapeTo(value, buf, IniTokenContext.Value, Escaper, writer, out errMsg))
+				{
+					throw CannotEscapeTextException(value, errMsg);
+				}
+			}
+			else
+			{
+				writer.Write(key);
+				writer.Write(KeyDelim);
+				writer.Write(value);
+			}
 			writer.Write(NewLine);
 		}
 		/// <summary>
@@ -158,6 +203,17 @@
 		public void Dispose()
 		{
 			writer.Dispose();
+		}
+		private static IniException CannotEscapeTextException(ReadOnlySpan<char> text, string? errMsg)
+		{
+
+			return new IniException(IniErrorCode.InvalidEscapeSequence, string.Concat("Cannot escape text because ", errMsg ?? "(no error message received)", ":",
+#if NETSTANDARD2_0
+				text.ToString()
+#else
+				text
+#endif
+			));
 		}
 	}
 }

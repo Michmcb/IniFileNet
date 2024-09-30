@@ -154,7 +154,7 @@
 		/// <returns><see cref="Value"/> or <see cref="IniErrorCode.ValueMissing"/>.</returns>
 		public IniResult<T> ValueOrError()
 		{
-			return HasValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Section,	Key));
+			return HasValue ? new IniResult<T>(Value, default) : new(default!, IniError.KeyMissingValue(Section, Key));
 		}
 		/// <summary>
 		/// Returns <see cref="Value"/> if <see cref="HasValue"/> is <see langword="true"/>, or throws an <see cref="IniException"/>.

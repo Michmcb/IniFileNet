@@ -521,7 +521,7 @@ namespace IniFileNet.IO
 						if (Options.TrimValues && char.IsWhiteSpace(Block[Block.Length - 1]))
 						{
 							int pos = Block.Length;
-							while (char.IsWhiteSpace(Block[--pos]));
+							while (char.IsWhiteSpace(Block[--pos])) ;
 							_position = pos + 1;
 							// If no content besides the trailing whitespace, then say we hit the end to avoid infinite loop
 							if (_position == start)
@@ -561,7 +561,6 @@ namespace IniFileNet.IO
 				: IniContentType.Value;
 			return new(valueType, valueContent);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private ReadOnlySpan<char> ValueEnded(ReadOnlySpan<char> content)
 		{
 			_state = IniSpanReaderBlockState.ValueEnded;

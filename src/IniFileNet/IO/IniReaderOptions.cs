@@ -2,6 +2,7 @@
 {
 	/// <summary>
 	/// Options to configure how to parse an ini file.
+	/// By default, all settings are false.
 	/// </summary>
 	public readonly struct IniReaderOptions
 	{

@@ -46,7 +46,7 @@
 		[Fact]
 		public static void SingleParsed()
 		{
-			IniValueAcceptorSingle<int> x = new(Parse.Int32);
+			IniValueAcceptorSingle<int> x = new(IniParse.Int32);
 			Assert.Equal("", x.Section);
 			Assert.Equal("", x.Key);
 			Assert.Equal(5, x.ValueOr(5));
@@ -124,7 +124,7 @@
 		[Fact]
 		public static void OnlyFirstParsed()
 		{
-			IniValueAcceptorOnlyFirst<int> x = new(Parse.Int32);
+			IniValueAcceptorOnlyFirst<int> x = new(IniParse.Int32);
 			Assert.Equal("", x.Section);
 			Assert.Equal("", x.Key);
 			Assert.Equal(5, x.ValueOr(5));
@@ -202,7 +202,7 @@
 		[Fact]
 		public static void OnlyLastParsed()
 		{
-			IniValueAcceptorOnlyLast<int> x = new(Parse.Int32);
+			IniValueAcceptorOnlyLast<int> x = new(IniParse.Int32);
 			Assert.Equal("", x.Section);
 			Assert.Equal("", x.Key);
 			Assert.Equal(5, x.ValueOr(5));
@@ -302,7 +302,7 @@
 		[Fact]
 		public static void ManyParsed()
 		{
-			IniValueAcceptorMany<int, List<int>> x = new(Parse.Int32);
+			IniValueAcceptorMany<int, List<int>> x = new(IniParse.Int32);
 			Assert.Equal("", x.Section);
 			Assert.Equal("", x.Key);
 			Assert.Collection(x.ValueOr([1, 2, 3]), y => Assert.Equal(1, y), y => Assert.Equal(2, y), y => Assert.Equal(3, y));

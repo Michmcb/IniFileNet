@@ -147,7 +147,7 @@
 
 			await c2.Error(IniErrorCode.InvalidEscapeSequence);
 
-			await Chk.CheckAllIniDictionaryReader(BadKeyEscapeSequenceIni, BadKeyEscapeSequenceOpt, new IniError(IniErrorCode.InvalidEscapeSequence, "Invalid escape sequence at index 1 of text:F\\xoo"), []);
+			await Chk.CheckAllIniDictionaryReader(BadKeyEscapeSequenceIni, BadKeyEscapeSequenceOpt, new IniError(IniErrorCode.InvalidEscapeSequence, "Error unescaping at char 0 in stream, char 0 in block. Invalid escape sequence at index 1 of text:F\\xoo"), []);
 		}
 		
 		public const string TrailingSlashKeyIni = "Key\\";

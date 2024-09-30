@@ -22,12 +22,7 @@
 
 
 TODO
-The only real reason we would have to split the options up is because the span reader doesn't use all of them. Other than that we may as well keep it all in one struct.
-
-Allow a null Escaper; that way we can just skip escaping entirely if need be
-
-
-Values and Comments should allow partial content since values may be large. Plus, line continuations are a thing for values, so partial values are basically required.
+We have to allow writing Values with line continuations in them.
 
 
 We need to be consistent across all calls. Ideally...
