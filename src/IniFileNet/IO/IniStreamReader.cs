@@ -1,10 +1,12 @@
 ﻿namespace IniFileNet.IO
 {
+	using IniFileNet;
 	using System;
 	using System.Globalization;
 	using System.IO;
 	using System.Text;
 	using System.Threading.Tasks;
+
 	/// <summary>
 	/// Reads an ini text stream.
 	/// </summary>
@@ -26,9 +28,10 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniStreamReader(TextReader reader, IniReaderOptions options = default, int bufferSize = DefaultBufferSize, bool leaveOpen = false)
+		public IniStreamReader(TextReader reader, IIniTextEscaper? escaper, IniReaderOptions options = default, int bufferSize = DefaultBufferSize, bool leaveOpen = false)
 		{
 			Reader = reader;
+			Escaper = escaper;
 			BufferSize = bufferSize;
 			LeaveOpen = leaveOpen;
 			buf = new char[bufferSize];
@@ -39,6 +42,11 @@
 		/// The underlying <see cref="TextReader"/> being used.
 		/// </summary>
 		public TextReader Reader { get; }
+		/// <summary>
+		/// The escaper to use to unescape text read.
+		/// If null, no unescaping is done.
+		/// </summary>
+		public IIniTextEscaper? Escaper { get; }
 		/// <summary>
 		/// The size of the buffer to use.
 		/// </summary>
@@ -83,14 +91,15 @@
 				}
 				else
 				{
+					int pos = state.Position;
 #if NETSTANDARD2_0
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = Reader.Read(buf, copied, buf.Length - copied);
 #else
-					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					int charsRead = Reader.Read(buf.Span.Slice(copied));
+					state = state.NewBlock(buf.Span[..currentDataSize], buf.Span, out int copied);
+					int charsRead = Reader.Read(buf.Span[copied..]);
 #endif
-					totalPosition += copied;
+					totalPosition += pos;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -116,14 +125,15 @@
 				}
 				else
 				{
+					int pos = state.Position;
 #if NETSTANDARD2_0
 					state = state.NewBlock(buf.AsSpan(0, currentDataSize), buf.AsSpan(), out int copied);
 					int charsRead = await Reader.ReadAsync(buf, copied, buf.Length - copied);
 #else
-					state = state.NewBlock(buf.Span.Slice(0, currentDataSize), buf.Span, out int copied);
-					int charsRead = await Reader.ReadAsync(buf.Slice(copied));
+					state = state.NewBlock(buf.Span[..currentDataSize], buf.Span, out int copied);
+					int charsRead = await Reader.ReadAsync(buf[copied..]);
 #endif
-					totalPosition += copied;
+					totalPosition += pos;
 					currentDataSize = copied + charsRead;
 					isFinalBlock = charsRead == 0;
 				}
@@ -135,12 +145,13 @@
 #if NETSTANDARD2_0
 			buf.AsSpan(0, currentDataSize)
 #else
-			buf.Slice(0, currentDataSize).Span
+			buf[..currentDataSize].Span
 #endif
 				, state, isFinalBlock);
 			IniToken token = IniToken.End;
 			while (token == IniToken.End)
 			{
+				int p = sr.Position;
 				IniContent ic = sr.Read();
 				switch (ic.Type)
 				{
@@ -167,6 +178,58 @@
 						contentBuilder.Append(ic.Content);
 #endif
 						break;
+					case IniContentType.KeyEscaped:
+						{
+							if (Escaper == null) goto case IniContentType.Key;
+							using StringWriter sw = new();
+							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Key, out string? errMsg))
+							{
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping key text:");
+								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
+								return new(IniToken.Error, msg);
+							}
+							contentBuilder.Append(sw.GetStringBuilder());
+						}
+						break;
+					case IniContentType.ValueEscaped:
+						{
+							if (Escaper == null) goto case IniContentType.Value;
+							using StringWriter sw = new();
+							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Value, out string? errMsg))
+							{
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping value text:");
+								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
+								return new(IniToken.Error, msg);
+							}
+							contentBuilder.Append(sw.GetStringBuilder());
+						}
+						break;
+					case IniContentType.SectionEscaped:
+						{
+							if (Escaper == null) goto case IniContentType.Section;
+							using StringWriter sw = new();
+							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Section, out string? errMsg))
+							{
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping section text:");
+								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
+								return new(IniToken.Error, msg);
+							}
+							contentBuilder.Append(sw.GetStringBuilder());
+						}
+						break;
+					case IniContentType.CommentEscaped:
+						{
+							if (Escaper == null) goto case IniContentType.Comment;
+							using StringWriter sw = new();
+							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Comment, out string? errMsg))
+							{
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping comment text:");
+								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
+								return new(IniToken.Error, msg);
+							}
+							contentBuilder.Append(sw.GetStringBuilder());
+						}
+						break;
 
 					case IniContentType.EndKey:
 						token = IniToken.Key;
@@ -185,20 +248,30 @@
 					case IniContentType.Error:
 						state = sr.GetState();
 						string s = ic.Content.ToString();
-						Error = new(sr.ErrorCode, string.Concat("Error at character ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream. This is the data where the error was encountered: ", s));
+						Error = new(sr.ErrorCode, string.Concat("Error at char ", StreamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+							p.ToString(CultureInfo.InvariantCulture), " in block. This is the block in which the error was encountered:", s));
 						return new ReadResult(IniToken.Error, s);
 				}
 			}
 			state = sr.GetState();
-			// TODO optimize this; we can just have a trim method for the content builder
 			string content = token switch
 			{
-				IniToken.Section => Options.TrimSections ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
-				IniToken.Key => Options.TrimKeys ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
-				IniToken.Value => Options.TrimValues ? contentBuilder.ToString().Trim() : contentBuilder.ToString(),
+				IniToken.Section => contentBuilder.ToString(),
+				IniToken.Key => contentBuilder.ToString(),
+				IniToken.Value => contentBuilder.ToString(),
 				_ => contentBuilder.ToString(),
 			};
 			return new ReadResult(token, content);
+		}
+		private static string GetUnescapeErrorMsg(ReadOnlySpan<char> content, int streamPosition, int blockPosition, string? errMsg, string fallbackMsgPart)
+		{
+			return string.Concat("Error unescaping at char ", streamPosition.ToString(CultureInfo.InvariantCulture), " in stream, char ",
+				blockPosition.ToString(CultureInfo.InvariantCulture), " in block. ", errMsg ?? string.Concat(fallbackMsgPart,
+#if NETSTANDARD2_0
+				content.ToString()));
+#else
+				content));
+#endif
 		}
 		/// <summary>
 		/// Disposes of <see cref="Reader"/> if <see cref="LeaveOpen"/> is <see langword="false"/>. Otherwise, does nothing.

@@ -53,5 +53,13 @@
 		/// A key was found before any sections were found.
 		/// </summary>
 		GlobalKeyNotAllowed,
+		/// <summary>
+		/// An escape sequence (backslash followed by a character) was invalid.
+		/// </summary>
+		InvalidEscapeSequence,
+		/// <summary>
+		/// Unable to escape a particular character.
+		/// </summary>
+		CannotEscapeCharacter,
 	}
 }

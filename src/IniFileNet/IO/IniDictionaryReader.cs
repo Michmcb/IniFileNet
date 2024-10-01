@@ -72,7 +72,7 @@
 			{
 				ReadResult rr = await reader.ReadAsync();
 				if (rr.Token == IniToken.End) return reader.Error;
-				var error = state.Handle(rr);
+				IniError error = state.Handle(rr);
 				if (error.Code != IniErrorCode.None) return error;
 			}
 			return reader.Error;

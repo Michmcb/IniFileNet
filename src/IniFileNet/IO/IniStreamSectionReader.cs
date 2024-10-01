@@ -31,6 +31,10 @@
 		/// </summary>
 		public ReadOnlyIniSection Section { get; private set; }
 		/// <summary>
+		/// Convenience property to get the value of <see cref="IniStreamReader.Error"/>.
+		/// </summary>
+		public IniError Error => Reader.Error;
+		/// <summary>
 		/// Attempts to read the next section. Global keys, if they are allowed, will be in a section with a name of empty string.
 		/// Sets the <see cref="Section"/> property to the read section when returning <see langword="true"/>.
 		/// Returns <see langword="false"/> when an error is encountered or there are no more sections to read. Check the <see cref="IniStreamReader.Error"/> property for any errors.

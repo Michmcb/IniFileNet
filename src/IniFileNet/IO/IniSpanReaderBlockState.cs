@@ -54,16 +54,20 @@
 		/// </summary>
 		PreValue = 11,
 		/// <summary>
+		/// Reading the first part of a value
+		/// </summary>
+		ValueFirstPart = 12,
+		/// <summary>
 		/// Reading a value
 		/// </summary>
-		Value = 12,
+		Value = 13,
 		/// <summary>
 		/// Finished reading a value
 		/// </summary>
-		ValueEnded = 13,
+		ValueEnded = 14,
 		/// <summary>
 		/// In an error state
 		/// </summary>
-		Error = 14,
+		Error = 15,
 	}
 }

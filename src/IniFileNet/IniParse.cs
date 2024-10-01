@@ -5,7 +5,7 @@
 	/// <summary>
 	/// Parse methods.
 	/// </summary>
-	public static class Parse
+	public static class IniParse
 	{
 		/// <summary>
 		/// Returns a successful result and the parsed value if <see cref="bool.TryParse(string?, out bool)"/> is successful, or <see cref="IniErrorCode.ValueInvalid"/> on failure.

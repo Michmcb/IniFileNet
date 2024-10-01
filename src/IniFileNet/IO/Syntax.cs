@@ -11,13 +11,13 @@
 	public static class Syntax
 	{
 		/// <summary>
-		/// Equals and Semicolon characters.
+		/// Equals character.
 		/// </summary>
-		public static readonly ReadOnlyMemory<char> EqSemicolonAsMemory = new char[] { '=', ';' };
+		public static readonly ReadOnlyMemory<char> EqAsMemory = new char[] { '=' };
 		/// <summary>
-		/// Equals, Colon, and Semicolon characters.
+		/// Equals and Colon characters.
 		/// </summary>
-		public static readonly ReadOnlyMemory<char> EqColonSemicolonAsMemory = new char[] { '=', ':', ';' };
+		public static readonly ReadOnlyMemory<char> EqColonAsMemory = new char[] { '=', ':' };
 		/// <summary>
 		/// The characters that may not appear in a key.
 		/// </summary>
@@ -38,11 +38,11 @@
 		/// <summary>
 		/// Equals and Semicolon characters.
 		/// </summary>
-		public static readonly SearchValues<char> EqSemicolon = SearchValues.Create(new char[] { '=', ';' });
+		public static readonly SearchValues<char> Eq = SearchValues.Create(EqAsMemory.Span);
 		/// <summary>
 		/// Equals, Colon, and Semicolon characters.
 		/// </summary>
-		public static readonly SearchValues<char> EqColonSemicolon = SearchValues.Create(new char[] { '=', ':', ';' });
+		public static readonly SearchValues<char> EqColon = SearchValues.Create(EqColonAsMemory.Span);
 		/// <summary>
 		/// The characters that may not appear in a key.
 		/// </summary>

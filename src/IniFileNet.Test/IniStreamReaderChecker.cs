@@ -10,8 +10,13 @@
 		private readonly IniStreamReader readerAsync;
 		public IniStreamReaderChecker(string ini, IniReaderOptions options = default)
 		{
-			reader = new(new StringReader(ini), options);
-			readerAsync = new(new StringReader(ini), options);
+			reader = new(new StringReader(ini), DefaultIniTextEscaper.Default, options);
+			readerAsync = new(new StringReader(ini), DefaultIniTextEscaper.Default, options);
+		}
+		public IniStreamReaderChecker(string ini, int bufferSize, IniReaderOptions options = default)
+		{
+			reader = new(new StringReader(ini), DefaultIniTextEscaper.Default, options, bufferSize: bufferSize);
+			readerAsync = new(new StringReader(ini), DefaultIniTextEscaper.Default, options, bufferSize: bufferSize);
 		}
 		public async Task Next(IniToken token, string content)
 		{

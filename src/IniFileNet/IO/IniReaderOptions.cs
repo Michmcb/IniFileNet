@@ -2,6 +2,7 @@
 {
 	/// <summary>
 	/// Options to configure how to parse an ini file.
+	/// By default, all settings are false.
 	/// </summary>
 	public readonly struct IniReaderOptions
 	{
@@ -15,6 +16,10 @@
 			bool allowKeyDelimiterColon = false,
 			bool allowLineContinuations = false,
 			bool ignoreComments = false,
+			bool ignoreSectionEscapes = false,
+			bool ignoreKeyEscapes = false,
+			bool ignoreValueEscapes = false,
+			bool ignoreCommentEscapes = false,
 			bool trimSections = false,
 			bool trimKeys = false,
 			bool trimValues = false
@@ -25,6 +30,10 @@
 			AllowKeyDelimiterColon = allowKeyDelimiterColon;
 			AllowLineContinuations = allowLineContinuations;
 			IgnoreComments = ignoreComments;
+			IgnoreSectionEscapes = ignoreSectionEscapes;
+			IgnoreKeyEscapes = ignoreKeyEscapes;
+			IgnoreValueEscapes = ignoreValueEscapes;
+			IgnoreCommentEscapes = ignoreCommentEscapes;
 			TrimSections = trimSections;
 			TrimKeys = trimKeys;
 			TrimValues = trimValues;
@@ -53,29 +62,32 @@
 		/// </summary>
 		public bool IgnoreComments { get; }
 		/// <summary>
-		/// When reading, all section names will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all escape sequences inside sections are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreSectionEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside keys are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreKeyEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside values are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreValueEscapes { get; }
+		/// <summary>
+		/// When reading, all escape sequences inside comments are ignored. Any content with a \ in it is assumed to be a regular string.
+		/// </summary>
+		public bool IgnoreCommentEscapes { get; }
+		/// <summary>
+		/// When reading, all section names will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimSections { get; }
 		/// <summary>
-		/// When reading, all keys will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all keys will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimKeys { get; }
 		/// <summary>
-		/// When reading, all values will be trimmed.
-		/// Respected by <see cref="IniStreamReader"/> but not <see cref="IniSpanReader"/>.
+		/// When reading, all values will have leading and trailing whitespace trimmed.
 		/// </summary>
 		public bool TrimValues { get; }
-		///// <summary>
-		///// Creates a new instance of <see cref="IniReaderOptions"/> with the relevant options copied.
-		///// </summary>
-		///// <param name="options">The value to convert.</param>
-		//public static implicit operator IniReaderOptions(IniReaderOptions options) => new(options.AllowGlobalKeys, options.AllowCommentsNumberSign, options.AllowKeyDelimiterColon, options.AllowLineContinuations, options.IgnoreComments);
-		///// <summary>
-		///// Creates a new instance of <see cref="IniStreamReaderOptions"/> with the relevant options copied.
-		///// </summary>
-		///// <param name="options">The value to convert.</param>
-		//public static implicit operator IniStreamReaderOptions(IniReaderOptions options) => new(options.TrimSections, options.TrimKeys, options.TrimValues);
 	}
 }
