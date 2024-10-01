@@ -17,6 +17,7 @@
 - Support for escape sequences added, both reading and writing
 - Trimming strings is supported by IniSpanReader
 - Renamed HaveValue to HasValue to be consistent with .NET
+- Empty section names are disallowed on parsing
 
 
 

@@ -17,7 +17,8 @@
     <PackageTags>ini file read write config configuration</PackageTags>
     <PackageReleaseNotes>- Support for escape sequences added, both reading and writing
 - Trimming strings is supported by IniSpanReader
-- Renamed HaveValue to HasValue to be consistent with .NET</PackageReleaseNotes>
+- Renamed HaveValue to HasValue to be consistent with .NET
+- Empty section names are disallowed on parsing</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

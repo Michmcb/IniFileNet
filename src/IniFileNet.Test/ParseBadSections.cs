@@ -126,5 +126,26 @@
 
 			await Chk.CheckAllIniDictionaryReader(EscapedEndBracketSectionIni, EscapedEndBracketSectionOpt, new IniError(IniErrorCode.SectionCloseBracketNotFound, "Error at char 1 in stream, char 0 in block. This is the block in which the error was encountered:Section\\]"), []);
 		}
+		public const string EmptySectionIni = "[]";
+		public static readonly IniReaderOptions EmptySectionOpt = new();
+		[Fact]
+		public static void EmptySectionSpan()
+		{
+			IniSpanReaderChecker c = new(EmptySectionIni, EmptySectionOpt, false);
+			c.Next(IniContentType.StartSection, "[");
+			c.Next(IniContentType.Error, "[]");
+			c.Next(IniContentType.Error, "[]");
+		}
+		[Fact]
+		public static async Task EmptySectionStream()
+		{
+			var (c1, c2) = Checks.For(EmptySectionIni, EmptySectionOpt);
+			await c1.Next(IniToken.Error, "[]");
+			await c1.Next(IniToken.Error, "[]");
+
+			await c2.Error(IniErrorCode.EmptySectionName);
+
+			await Chk.CheckAllIniDictionaryReader(EmptySectionIni, EmptySectionOpt, new IniError(IniErrorCode.EmptySectionName, "Error at char 1 in stream, char 1 in block. This is the block in which the error was encountered:[]"), []);
+		}
 	}
 }

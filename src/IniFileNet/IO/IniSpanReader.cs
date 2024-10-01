@@ -369,7 +369,6 @@ namespace IniFileNet.IO
 							slashIdx = adv.SlashIndex;
 							contentType = slashIdx != -1 ? IniContentType.SectionEscaped : IniContentType.Section;
 						}
-
 						if (idx >= Block.Length)
 						{
 							if (IsFinalBlock)
@@ -380,6 +379,10 @@ namespace IniFileNet.IO
 							{
 								return new(IniContentType.End, default);
 							}
+						}
+						if (idx - start == 0)
+						{
+							return Error(IniErrorCode.EmptySectionName);
 						}
 						_state = IniSpanReaderBlockState.SectionEnded;
 						_position = idx;

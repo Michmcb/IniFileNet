@@ -278,30 +278,6 @@
 
 			await Chk.CheckAllIniDictionaryReader(UntrimmedSectionIni, UntrimmedSectionOpt, default, []);
 		}
-		public const string EmptySectionIni = "[]";
-		public static readonly IniReaderOptions EmptySectionOpt = new();
-		[Fact]
-		public static void EmptySectionSpan()
-		{
-			// TODO perhaps allowing empty sections should be an option? It's strange but technically not illegal?
-			IniSpanReaderChecker c = new(EmptySectionIni, EmptySectionOpt, false);
-			c.Next(IniContentType.StartSection, "[");
-			c.Next(IniContentType.Section, default);
-			c.Next(IniContentType.EndSection, "]");
-			c.Next(IniContentType.End, default);
-		}
-		[Fact]
-		public static async Task EmptySectionStream()
-		{
-			var (c1, c2) = Checks.For(EmptySectionIni, EmptySectionOpt);
-			await c1.Next(IniToken.Section, "");
-			await c1.Next(IniToken.End, "");
-
-			await c2.Next(new("", [], []));
-			await c2.End();
-
-			await Chk.CheckAllIniDictionaryReader(EmptySectionIni, EmptySectionOpt, default, []);
-		}
 		private const string EscapedSectionIni = "[Se\\ncti\\]on]";
 		private static readonly IniReaderOptions EscapedSectionOpt = default;
 		[Fact]

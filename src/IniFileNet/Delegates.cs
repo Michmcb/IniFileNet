@@ -16,14 +16,4 @@
 	/// <param name="keyValueComments">The comments preceding the key and value.</param>
 	/// <returns>On success, <see langword="default"/>. On failure, an <see cref="IniError"/>.</returns>
 	public delegate IniError AddDictionaryValue<T>(Dictionary<string, T> dictionary, string section, string key, ReadOnlyMemory<char> sectionKeyDelimiter, string value, IReadOnlyList<string> sectionComments, IReadOnlyList<string> keyValueComments);
-	/// <summary>
-	/// This delegate can be used to provide a piece of text.
-	/// </summary>
-	/// <param name="text">The text.</param>
-	public delegate void TextCallback(ReadOnlySpan<char> text);
-	/// <summary>
-	/// This delegate can be used to provide a single character.
-	/// </summary>
-	/// <param name="c">The character.</param>
-	public delegate void CharCallback(char c);
 }
