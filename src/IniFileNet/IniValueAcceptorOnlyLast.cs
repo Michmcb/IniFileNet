@@ -11,15 +11,16 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniValueAcceptorOnlyLast()
+		/// <param name="key">The target key.</param>
+		public IniValueAcceptorOnlyLast(string key)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get;  }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -38,7 +39,6 @@
 		public IniError Accept(string section, string key, string value)
 		{
 			Section = section;
-			Key = key;
 			Value = value;
 			return default;
 		}
@@ -48,7 +48,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = null;
 		}
 		/// <summary>
@@ -86,17 +85,18 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorOnlyLast(Func<string, IniResult<T>> parse)
+		public IniValueAcceptorOnlyLast(string key, Func<string, IniResult<T>> parse)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 			Parse = parse;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get;  }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -122,7 +122,6 @@
 			if (p.Error.Code == default)
 			{
 				Section = section;
-				Key = key;
 				HasValue = true;
 				Value = p.Value;
 			}
@@ -134,7 +133,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = default;
 			HasValue = false;
 		}

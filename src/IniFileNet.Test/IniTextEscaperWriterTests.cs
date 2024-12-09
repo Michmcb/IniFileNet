@@ -4,45 +4,65 @@
 	using IniFileNet;
 	using IniFileNet.IO;
 	using System.IO;
+	using System;
+	using System.Threading.Tasks;
 
 	public static class IniTextEscaperWriterTests
 	{
 		[Fact]
-		public static void EscapeVariants()
+		public static async Task EscapeVariants()
 		{
+			DefaultIniTextEscaper escaper = new DefaultIniTextEscaper(false);
 			StringWriter sw = new();
-			IniTextEscaperWriter e = new(new DefaultIniTextEscaper(false), sw, 2);
-			Assert.True(e.Escape("t\next\n", IniTokenContext.Value, out string? errMsg));
-			Assert.Null(errMsg);
+			var op = IniTextEscaperWriter.Escape("t\next\n", 2, escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\\next\\n", sw.ToString());
 			sw.GetStringBuilder().Clear();
 
-			Assert.True(e.Escape("t\next\n", new char[3], IniTokenContext.Value, out errMsg));
-			Assert.Null(errMsg);
+			op = IniTextEscaperWriter.Escape("t\next\n", new char[3], escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\\next\\n", sw.ToString());
 			sw.GetStringBuilder().Clear();
 
-			Assert.True(e.StackEscape("t\next\n", IniTokenContext.Value, out errMsg));
-			Assert.Null(errMsg);
+			op = await IniTextEscaperWriter.EscapeAsync("t\next\n".AsMemory(), new char[3], escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
+			Assert.Equal("t\\next\\n", sw.ToString());
+			sw.GetStringBuilder().Clear();
+
+			op = await IniTextEscaperWriter.EscapeAsync("t\next\n".AsMemory(), new char[3].AsMemory(), escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\\next\\n", sw.ToString());
 		}
 		[Fact]
-		public static void UnescapeVariants()
+		public static async Task UnescapeVariants()
 		{
+			DefaultIniTextEscaper escaper = new (false);
 			StringWriter sw = new();
-			IniTextEscaperWriter e = new(new DefaultIniTextEscaper(false), sw, 2);
-			Assert.True(e.Unescape("t\\next\\n", IniTokenContext.Value, out string? errMsg));
-			Assert.Null(errMsg);
+			var op = IniTextEscaperWriter.Unescape("t\\next\\n", 2, escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\next\n", sw.ToString());
 			sw.GetStringBuilder().Clear();
 
-			Assert.True(e.Unescape("t\\next\\n", new char[3], IniTokenContext.Value, out errMsg));
-			Assert.Null(errMsg);
+			op = IniTextEscaperWriter.Unescape("t\\next\\n", new char[3], escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\next\n", sw.ToString());
 			sw.GetStringBuilder().Clear();
 
-			Assert.True(e.StackUnescape("t\\next\\n", IniTokenContext.Value, out errMsg));
-			Assert.Null(errMsg);
+			op = await IniTextEscaperWriter.UnescapeAsync("t\\next\\n".AsMemory(), new char[3], escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
+			Assert.Equal("t\next\n", sw.ToString());
+			sw.GetStringBuilder().Clear();
+
+			op = await IniTextEscaperWriter.UnescapeAsync("t\\next\\n".AsMemory(), new char[3].AsMemory(), escaper, IniTokenContext.Value, sw);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal("t\next\n", sw.ToString());
 		}
 	}

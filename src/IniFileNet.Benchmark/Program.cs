@@ -2,9 +2,6 @@
 {
 	using BenchmarkDotNet.Attributes;
 	using BenchmarkDotNet.Jobs;
-	using BenchmarkDotNet.Running;
-	using IniFileNet.IO;
-	using System.Buffers;
 
 	internal class Program
 	{
@@ -187,14 +184,14 @@
 	//		}
 	//	}
 	//}
-	[SimpleJob(RuntimeMoniker.Net80)]
+	[SimpleJob(RuntimeMoniker.Net90)]
 	[RPlotExporter]
 	[MemoryDiagnoser]
 	public class AcceptorTypes
 	{
-		private readonly IniValueAcceptorOnlyFirst f1 = new();
-		private readonly IniValueAcceptorOnlyLast l1 = new();
-		private readonly IniValueAcceptorSingle s1 = new();
+		private readonly IniValueAcceptorOnlyFirst f1 = new("k");
+		private readonly IniValueAcceptorOnlyLast l1 = new("k");
+		private readonly IniValueAcceptorSingle s1 = new("k");
 		[Benchmark]
 		public IniError AcceptFirst1()
 		{

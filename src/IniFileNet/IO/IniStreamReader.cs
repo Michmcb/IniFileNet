@@ -182,9 +182,10 @@
 						{
 							if (Escaper == null) goto case IniContentType.Key;
 							using StringWriter sw = new();
-							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Key, out string? errMsg))
+							OperationStatusMsg op = IniTextEscaperWriter.Unescape(ic.Content, 1024, Escaper, IniTokenContext.Key, sw);
+							if (op.Status != System.Buffers.OperationStatus.Done)
 							{
-								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping key text:");
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, op.Msg, "Error unescaping key text:");
 								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
 								return new(IniToken.Error, msg);
 							}
@@ -195,9 +196,10 @@
 						{
 							if (Escaper == null) goto case IniContentType.Value;
 							using StringWriter sw = new();
-							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Value, out string? errMsg))
+							OperationStatusMsg op = IniTextEscaperWriter.Unescape(ic.Content, 1024, Escaper, IniTokenContext.Value, sw);
+							if (op.Status != System.Buffers.OperationStatus.Done)
 							{
-								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping value text:");
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, op.Msg, "Error unescaping value text:");
 								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
 								return new(IniToken.Error, msg);
 							}
@@ -208,9 +210,10 @@
 						{
 							if (Escaper == null) goto case IniContentType.Section;
 							using StringWriter sw = new();
-							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Section, out string? errMsg))
+							OperationStatusMsg op = IniTextEscaperWriter.Unescape(ic.Content, 1024, Escaper, IniTokenContext.Section, sw);
+							if (op.Status != System.Buffers.OperationStatus.Done)
 							{
-								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping section text:");
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, op.Msg, "Error unescaping section text:");
 								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
 								return new(IniToken.Error, msg);
 							}
@@ -221,9 +224,10 @@
 						{
 							if (Escaper == null) goto case IniContentType.Comment;
 							using StringWriter sw = new();
-							if (!new IniTextEscaperWriter(Escaper, sw).StackUnescape(ic.Content, IniTokenContext.Comment, out string? errMsg))
+							OperationStatusMsg op = IniTextEscaperWriter.Unescape(ic.Content, 1024, Escaper, IniTokenContext.Comment, sw);
+							if (op.Status != System.Buffers.OperationStatus.Done)
 							{
-								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, errMsg, "Error unescaping comment text:");
+								string msg = GetUnescapeErrorMsg(ic.Content, StreamPosition, p, op.Msg, "Error unescaping comment text:");
 								Error = new(IniErrorCode.InvalidEscapeSequence, msg);
 								return new(IniToken.Error, msg);
 							}

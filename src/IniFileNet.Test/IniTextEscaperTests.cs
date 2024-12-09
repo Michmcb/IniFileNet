@@ -36,25 +36,25 @@
 		private static void CheckEscape(string text, IniTokenContext context, string expected)
 		{
 			StringWriter writer = new();
-			IniTextEscaperWriter e = new(DefaultIniTextEscaper.Default, writer);
-			Assert.True(e.StackEscape(text, context, out string? errMsg));
+			OperationStatusMsg op = IniTextEscaperWriter.Escape(text, 1024, DefaultIniTextEscaper.Default, context, writer);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal(expected, writer.ToString());
-			Assert.Null(errMsg);
 		}
 		private static void CheckUnescape(string text, IniTokenContext context, string expected)
 		{
 			StringWriter writer = new();
-			IniTextEscaperWriter e = new(DefaultIniTextEscaper.Default, writer);
-			Assert.True(e.StackUnescape(text, context, out string? errMsg));
+			OperationStatusMsg op = IniTextEscaperWriter.Unescape(text, 1024, DefaultIniTextEscaper.Default, context, writer);
+			Assert.Equal(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Null(op.Msg);
 			Assert.Equal(expected, writer.ToString());
-			Assert.Null(errMsg);
 		}
 		private static void CheckBadUnescape(string text, IniTokenContext context, string? expectedMsg)
 		{
 			StringWriter writer = new();
-			IniTextEscaperWriter e = new(DefaultIniTextEscaper.Default, writer);
-			Assert.False(e.StackUnescape(text, context, out string? errMsg));
-			Assert.Equal(errMsg, expectedMsg);
+			OperationStatusMsg op = IniTextEscaperWriter.Unescape(text, 1024, DefaultIniTextEscaper.Default, context, writer);
+			Assert.NotEqual(System.Buffers.OperationStatus.Done, op.Status);
+			Assert.Equal(op.Msg, expectedMsg);
 		}
 		[Fact]
 		public static void GoodEscapes()

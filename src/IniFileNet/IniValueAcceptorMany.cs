@@ -12,26 +12,29 @@
 		/// <summary>
 		/// Creates a new instance with a new empty list.
 		/// </summary>
-		public IniValueAcceptorMany() : this([]) { }
+		/// <param name="key">The target key.</param>
+		public IniValueAcceptorMany(string key) : this(key, []) { }
 		/// <summary>
 		/// Creates a new instance with a new empty list, with a capacity of <paramref name="capacity"/>.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="capacity">The number of elements that the new list can initially store.</param>
-		public IniValueAcceptorMany(int capacity) : this(new List<string>(capacity)) { }
+		public IniValueAcceptorMany(string key, int capacity) : this(key, new List<string>(capacity)) { }
 		/// <summary>
 		/// Creates a new instance which will fill the provided list.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="values">The list of values to fill.</param>
-		public IniValueAcceptorMany(List<string> values)
+		public IniValueAcceptorMany(string key, List<string> values)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 			Value = values;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get; }
 		/// <summary>
 		/// The values accepted so far.
 		/// </summary>
@@ -49,7 +52,6 @@
 		public IniError Accept(string section, string key, string value)
 		{
 			Section = section;
-			Key = key;
 			Value.Add(value);
 			return default;
 		}
@@ -61,7 +63,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = [];
 		}
 		/// <summary>
@@ -100,24 +101,26 @@
 		/// <summary>
 		/// Creates a new instance with a new empty list.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorMany(Func<string, IniResult<T>> parse) : this(new(), parse) { }
+		public IniValueAcceptorMany(string key, Func<string, IniResult<T>> parse) : this(key, new(), parse) { }
 		/// <summary>
 		/// Creates a new instance which will fill the provided list.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="values">The list of values to fill.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorMany(C values, Func<string, IniResult<T>> parse)
+		public IniValueAcceptorMany(string key, C values, Func<string, IniResult<T>> parse)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 			Value = values;
 			Parse = parse;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get; }
 		/// <summary>
 		/// The values accepted so far.
 		/// </summary>
@@ -143,7 +146,6 @@
 			if (p.Error.Code == default)
 			{
 				Section = section;
-				Key = key;
 				Value.Add(p.Value);
 			}
 			return p.Error;
@@ -156,7 +158,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = new();
 		}
 		/// <summary>

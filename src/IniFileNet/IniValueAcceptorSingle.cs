@@ -11,15 +11,16 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
-		public IniValueAcceptorSingle()
+		/// <param name="key">The target key.</param>
+		public IniValueAcceptorSingle(string key)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get;  }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -40,18 +41,12 @@
 		{
 			if (Value != null)
 			{
-				if (Section == section && Key == key)
-				{
-					return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Section: \"", section, "\" Key: \"", key, "\". Value is: \"", value, "\""));
-				}
-				else
-				{
-					return new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. This Section: \"", section, "\" Key: \"", key, "\". Last Section: \"", Section, "\" Key: \"", Key, "\". Value is: \"", value, "\""));
-				}
+				return Section == section && Key == key
+					? new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. Section: \"", section, "\" Key: \"", key, "\". Value is: \"", value, "\""))
+					: new(IniErrorCode.ValueAlreadyPresent, string.Concat("Already accepted a value. This Section: \"", section, "\" This Key: \"", key, "\". Last Section: \"", Section, "\" Expected Key: \"", Key, "\". Value is: \"", value, "\""));
 			}
 			else Value = value;
 			Section = section;
-			Key = key;
 			return default;
 		}
 		/// <summary>
@@ -60,7 +55,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = null;
 		}
 		/// <summary>
@@ -98,17 +92,18 @@
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
+		/// <param name="key">The target key.</param>
 		/// <param name="parse">The parse function.</param>
-		public IniValueAcceptorSingle(Func<string, IniResult<T>> parse)
+		public IniValueAcceptorSingle(string key, Func<string, IniResult<T>> parse)
 		{
 			Section = string.Empty;
-			Key = string.Empty;
+			Key = key;
 			Parse = parse;
 		}
 		/// <inheritdoc/>
 		public string Section { get; set; }
 		/// <inheritdoc/>
-		public string Key { get; set; }
+		public string Key { get;  }
 		/// <summary>
 		/// The current value.
 		/// </summary>
@@ -139,7 +134,6 @@
 			if (p.Error.Code == default)
 			{
 				Section = section;
-				Key = key;
 				HasValue = true;
 				Value = p.Value;
 			}
@@ -151,7 +145,6 @@
 		public void Reset()
 		{
 			Section = string.Empty;
-			Key = string.Empty;
 			Value = default;
 			HasValue = false;
 		}

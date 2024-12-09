@@ -19,6 +19,11 @@
 - Renamed HaveValue to HasValue to be consistent with .NET
 - Empty section names are disallowed on parsing
 
+0.7
+- The Key property of IIniValueAcceptors is now immutable, and set on construction
+- Nullability annotation for IniError.ToString() fixed; it never returned null
+- IniTextEscaperWriter made a static class, which just holds helper methods for using an IIniTextEscaper
+- net9.0 target added
 
 
 

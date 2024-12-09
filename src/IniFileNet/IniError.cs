@@ -43,7 +43,7 @@
 		/// <summary>
 		/// Returns the string reperesentation of <see cref="Code"/> and <see cref="Msg"/>
 		/// </summary>
-		public override string? ToString()
+		public override string ToString()
 		{
 			return string.Concat(Code.ToString(), ": ", Msg);
 		}

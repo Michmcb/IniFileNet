@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <Title>IniFileNet</Title>
@@ -15,10 +15,10 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ini file read write config configuration</PackageTags>
-    <PackageReleaseNotes>- Support for escape sequences added, both reading and writing
-- Trimming strings is supported by IniSpanReader
-- Renamed HaveValue to HasValue to be consistent with .NET
-- Empty section names are disallowed on parsing</PackageReleaseNotes>
+    <PackageReleaseNotes>- The Key property of IIniValueAcceptors is now immutable, and set on construction
+- Nullability annotation for IniError.ToString() fixed; it never returned null
+- IniTextEscaperWriter made a static class, which just holds helper methods for using an IIniTextEscaper
+- net9.0 target added</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Michmcb/IniFileNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Michmcb/IniFileNet</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

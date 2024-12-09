@@ -10,9 +10,9 @@
 		/// </summary>
 		string Section { get; set; }
 		/// <summary>
-		/// The last successfully accepted key of this value acceptor.
+		/// The target key of this value acceptor.
 		/// </summary>
-		string Key { get; set; }
+		string Key { get; }
 		/// <summary>
 		/// Accepts value. If an error occurred during processing, returns the error.
 		/// </summary>

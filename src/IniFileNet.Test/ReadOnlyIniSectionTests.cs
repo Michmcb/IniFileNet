@@ -14,12 +14,12 @@
 				new("Key2", "Value2"),
 				new("Key3", "Value3"),
 			]);
-			IniValueAcceptorOnlyLast key1 = new();
-			IniValueAcceptorOnlyLast key4 = new();
+			IniValueAcceptorOnlyLast key1 = new("Key1");
+			IniValueAcceptorOnlyLast key4 = new("Key4");
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
 			{
-				["Key1"] = key1,
-				["Key4"] = key4,
+				[key1.Key] = key1,
+				[key4.Key] = key4,
 			};
 			Assert.Equal(default, sect.AcceptAll(acceptors));
 			Assert.Equal("Value1", key1.Value);
@@ -33,10 +33,10 @@
 				new("Key", "Value"),
 				new("Key", "Value"),
 			]);
-			IniValueAcceptorSingle key = new();
+			IniValueAcceptorSingle key = new("Key");
 			Dictionary<string, IIniValueAcceptor> acceptors = new()
 			{
-				["Key"] = key,
+				[key.Key] = key,
 			};
 			Assert.Equal(new IniError(IniErrorCode.ValueAlreadyPresent, "Already accepted a value. Section: \"Test\" Key: \"Key\". Value is: \"Value\""), sect.AcceptAll(acceptors));
 		}

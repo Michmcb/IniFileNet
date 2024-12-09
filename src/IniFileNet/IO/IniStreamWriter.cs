@@ -76,9 +76,10 @@
 			writer.Write('[');
 			if (Escaper != null)
 			{
-				if (!IniTextEscaperWriter.EscapeTo(name, stackalloc char[1024], IniTokenContext.Section, Escaper, writer, out string? errMsg))
+				var op = IniTextEscaperWriter.Escape(name, stackalloc char[1024], Escaper, IniTokenContext.Section, writer);
+				if (op.Status != System.Buffers.OperationStatus.Done)
 				{
-					throw CannotEscapeTextException(name, errMsg);
+					throw CannotEscapeTextException(name, op.Msg);
 				}
 			}
 			else
@@ -103,7 +104,7 @@
 		{
 			writer.Write(CommentStart);
 
-			IniTextEscaperWriter w = Escaper != null ? new(Escaper, writer) : default;
+			Span<char> buf = Escaper != null ? stackalloc char[1024] : default;
 
 			int nl;
 #if NET8_0_OR_GREATER
@@ -114,9 +115,10 @@
 			{
 				if (Escaper != null)
 				{
-					if (!w.StackEscape(comment.Slice(0, nl), IniTokenContext.Comment, out string? errMsg))
+					var op = IniTextEscaperWriter.Escape(comment.Slice(0, nl), buf, Escaper, IniTokenContext.Comment, writer);
+					if (op.Status != System.Buffers.OperationStatus.Done)
 					{
-						throw CannotEscapeTextException(comment.Slice(0, nl), errMsg);
+						throw CannotEscapeTextException(comment.Slice(0, nl), op.Msg);
 					}
 				}
 				else
@@ -142,9 +144,10 @@
 			}
 			if (Escaper != null)
 			{
-				if (!w.StackEscape(comment, IniTokenContext.Comment, out string? errMsg))
+				var op = IniTextEscaperWriter.Escape(comment, buf, Escaper, IniTokenContext.Comment, writer);
+				if (op.Status != System.Buffers.OperationStatus.Done)
 				{
-					throw CannotEscapeTextException(comment, errMsg);
+					throw CannotEscapeTextException(comment, op.Msg);
 				}
 			}
 			else
@@ -172,14 +175,16 @@
 			if (Escaper != null)
 			{
 				Span<char> buf = stackalloc char[1024];
-				if (!IniTextEscaperWriter.EscapeTo(key, buf, IniTokenContext.Key, Escaper, writer, out string? errMsg))
+				var op = IniTextEscaperWriter.Escape(key, buf, Escaper, IniTokenContext.Key, writer);
+				if (op.Status != System.Buffers.OperationStatus.Done)
 				{
-					throw CannotEscapeTextException(key, errMsg);
+					throw CannotEscapeTextException(key, op.Msg);
 				}
 				writer.Write(KeyDelim);
-				if (!IniTextEscaperWriter.EscapeTo(value, buf, IniTokenContext.Value, Escaper, writer, out errMsg))
+				op = IniTextEscaperWriter.Escape(value, buf, Escaper, IniTokenContext.Value, writer);
+				if (op.Status != System.Buffers.OperationStatus.Done)
 				{
-					throw CannotEscapeTextException(value, errMsg);
+					throw CannotEscapeTextException(value, op.Msg);
 				}
 			}
 			else

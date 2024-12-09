@@ -593,7 +593,6 @@ namespace IniFileNet.IO
 		{
 #if NET8_0_OR_GREATER
 			int i = Block.Slice(_position).IndexOfAnyExcept(Syntax.WhitespaceChars);
-
 #elif NET7_0_OR_GREATER
 			int i = Block.Slice(_position).IndexOfAnyExcept(Syntax.WhitespaceAsMemory.Span);
 #else
