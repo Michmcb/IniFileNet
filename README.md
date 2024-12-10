@@ -31,7 +31,7 @@ using (IniStreamSectionReader iniIn = new(new IniStreamReader(new StreamReader(n
 	IniValueAcceptorOnlyLast<DateTimeOffset> latest = b.OnlyLast("Seen", (string value) => DateTimeOffset.TryParse(value, out var r)
 		? new IniResult<DateTimeOffset>(r, default)
 		: new IniResult<DateTimeOffset>(default, new(IniErrorCode.ValueInvalid, string.Concat("Could not parse \"", value, "\" as DateTimeOffset"))));
-	IniValueAcceptorMany<int, HashSet<int>> seen = new(IniParse.Int32);
+	IniValueAcceptorMany<int, HashSet<int>> seen = new("Seen", IniParse.Int32);
 	Dictionary<string, IIniValueAcceptor> acceptors = b.Acceptors;
 	while (iniIn.NextSection())
 	{
